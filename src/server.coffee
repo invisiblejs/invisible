@@ -1,6 +1,7 @@
 browserify = require('browserify')
 path = require('path')
 fs = require('fs')
+coffeeify = require('coffeeify')
 
 module.exports = (rootFolder, opt) ->
 
@@ -13,6 +14,9 @@ module.exports = (rootFolder, opt) ->
     for modelFile in modelFiles
         console.log(modelFile)
         b.add(path.join(rootFolder, modelFile))
+
+    # Support for CoffeeScript
+    b.transform(coffeeify)
 
     # create bundle (invisible.js)
     b.bundle (err, compiled) ->
