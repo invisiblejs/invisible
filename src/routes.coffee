@@ -1,5 +1,6 @@
 
 module.exports = (app, path='') ->
+    #FIXME save path in invisible or wipe away
 	app.get("#{path}/:modelName", get_list)
 	app.post("#{path}/:modelName", post_list)
 
