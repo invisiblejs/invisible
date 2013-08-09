@@ -65,7 +65,6 @@ buildClientModel = (modelName, BaseModel)->
 
     return InvisibleModel
 
-#TODO test this one
 buildServerModel = (modelName, BaseModel)->
     class InvisibleModel extends BaseModel
             _modelName: modelName
