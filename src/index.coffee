@@ -1,5 +1,5 @@
 request = require("hyperquest")
-
+_ = require("underscore")
 
 Invisible = 
     _conf: {}
@@ -7,7 +7,6 @@ Invisible =
     createModel: (modelName, Model) ->
         console.log('Creating a Invisible Model: ' + modelName)
         
-        path = this._conf.path
         class InvisibleModel extends Model
             _modelName: modelName
             
@@ -18,27 +17,30 @@ Invisible =
 
             save: () -> 
                 console.log("saving")
+                model = this
                 
-                update = (error, res, body) ->
-                    console.log("updating saved model")
+                update = (error, res) ->
+                    fullBody = ''
+                    res.on('data', (chunk) -> 
+                        fullBody += chunk)
+                    res.on('end', () ->
+                        console.log("updating model with #{fullBody}")
+                        _.extend(model, JSON.parse(fullBody)))
 
-                    if not error and res.statusCode == 200
-                        console.log("got #{body}")
-                    return
-
+                #TODO add data (serialize this)
                 if @id?
-                    request.get("/models/#{@_modelName}/#{@id}/", update).end()
+                    request.put("/models/#{@_modelName}/#{@id}/", update).end()
                 else
-                    opts =
-                        headers: 
-                            'content-type': 'application/json'  
-                    request.post("/models/#{@_modelName}/", opts, update).end()
+                    request.post("/models/#{@_modelName}/", update).end()
                 return
             
             delete: ()-> 
                 console.log("deleting")
                 if @id?
-                    request.delete("#{path}/#{@_modelName}/#{@id}/", update).end()
+                    cb = (err, res) ->
+                        #TODO handle error
+                        console.log("deleted")
+                    request.delete("/models/#{@_modelName}/#{@id}/", cb).end()
                 return
 
             serialize: () -> #TODO implement
