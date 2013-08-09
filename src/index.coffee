@@ -1,5 +1,8 @@
-request = require("hyperquest")
+http = require("http")
 _ = require("underscore")
+
+isClient = () ->
+    window?
 
 Invisible = 
     _conf: {}
@@ -7,7 +10,17 @@ Invisible =
     createModel: (modelName, Model) ->
         console.log('Creating a Invisible Model: ' + modelName)
         
-        class InvisibleModel extends Model
+        if isClient()
+            InvisibleModel = buildClientModel(modelName, Model)
+        else
+            InvisibleModel = buildServerModel(modelName, Model)
+
+        this[modelName] = InvisibleModel
+        return InvisibleModel
+
+
+buildClientModel = (modelName, BaseModel)->
+    class InvisibleModel extends BaseModel
             _modelName: modelName
             
             @query: (opts)-> 
@@ -19,7 +32,7 @@ Invisible =
                 console.log("saving")
                 model = this
                 
-                update = (error, res) ->
+                update = (res) ->
                     fullBody = ''
                     res.on('data', (chunk) -> 
                         fullBody += chunk)
@@ -27,11 +40,16 @@ Invisible =
                         console.log("updating model with #{fullBody}")
                         _.extend(model, JSON.parse(fullBody)))
 
-                #TODO add data (serialize this)
                 if @id?
-                    request.put("/models/#{@_modelName}/#{@id}/", update).end()
+                    req = http.request(
+                        {path: "/models/#{@_modelName}/#{@id}/", method: "PUT"}, 
+                        update)
                 else
-                    request.post("/models/#{@_modelName}/", update).end()
+                    req = http.request(
+                        {path: "/models/#{@_modelName}/", method: "POST"}, 
+                        update)
+                
+                req.end(JSON.stringify(this))
                 return
             
             delete: ()-> 
@@ -40,20 +58,39 @@ Invisible =
                     cb = (err, res) ->
                         #TODO handle error
                         console.log("deleted")
-                    request.delete("/models/#{@_modelName}/#{@id}/", cb).end()
+
+                    http.request({path: "/models/#{@_modelName}/#{@id}/", method: "DELETE"}, 
+                        cb).end()
                 return
 
-            serialize: () -> #TODO implement
+    return InvisibleModel
 
-        this[modelName] = InvisibleModel
-        return InvisibleModel
+#TODO test this one
+buildServerModel = (modelName, BaseModel)->
+    class InvisibleModel extends BaseModel
+            _modelName: modelName
+            
+            @query: (opts)-> 
+                console.log("server querying")
+                #TODO implement
+                return {}
 
+            save: () -> 
+                console.log("server saving")
+                #TODO implement
+                return
+            
+            delete: ()-> 
+                console.log("server deleting")
+                #TODO implement
+                return
 
-if window?
+    return InvisibleModel
+
+if isClient()
     console.log('client')
     window.Invisible = Invisible
 else
     console.log('server')
 
 module.exports = Invisible
-

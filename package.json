@@ -19,7 +19,6 @@
     "browserify": "~2.25.1",
     "path": "~0.4.9",
     "coffeeify": "~0.5.1",
-    "hyperquest": "~0.1.7",
     "underscore": "~1.5.1"
   }
 }
