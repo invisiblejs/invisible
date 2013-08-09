@@ -18,6 +18,7 @@
   "dependencies": {
     "browserify": "~2.25.1",
     "path": "~0.4.9",
-    "coffeeify": "~0.5.1"
+    "coffeeify": "~0.5.1",
+    "underscore": "~1.5.1"
   }
 }
