@@ -1,24 +1,43 @@
+# mquery = require('mquery')
+mongo = require('mongodb')
+ObjectID = require('mongodb').ObjectID
+Invisible = require('invisible')
+
+db = undefined
+
+uri = 'mongodb://127.0.0.1:27017/invisible'
+
+mongo.connect uri, (err, database) ->
+    throw err if err?
+    db = database
+    console.log("connected to #{uri}")
+
 
 module.exports = (app) ->
-	app.get("/models/:modelName", get_list)
-	app.post("/models/:modelName", post_list)
-
-	app.get("/models/:modelName/:id", get_detail)
-	app.put("/models/:modelName/:id", put_detail)
-	app.delete("/models/:modelName/:id", delete_detail)
+	app.get("/invisible/:modelName", query)
+	app.post("/invisible/:modelName", save)
+	app.get("/invisible/:modelName/:id", show)
+	app.put("/invisible/:modelName/:id", update)
+	app.delete("/invisible/:modelName/:id", remove)
 
 #rest controllers
-get_list = (req, res) -> 
-    res.send("get list of model: #{req.params.modelName}")
+query = (req, res) -> 
+    col = db.collection(req.params.modelName)
+    col.find().toArray (err, results) ->
+        return next(err) if err?
+        res.send(results)
 
-post_list = (req, res) ->
+save = (req, res) ->
     res.send({id: 1, firstName: "John"})
 
-get_detail = (req, res) ->
-    res.send("get detail of model: #{req.params.modelName} id: #{req.params.id}")
+show = (req, res) ->
+    col = db.collection(req.params.modelName)
+    col.findOne {_id: new ObjectID(req.params.id)}, (err, result, a) ->
+        return next(err) if err?
+        res.send(result)
 
-put_detail = (req, res) ->
+update = (req, res) ->
     res.send({id: req.params.id, firstName: "Greg"})
 
-delete_detail = (req, res) ->
+remove = (req, res) ->
     res.send("delete model: #{req.params.modelName} id: #{req.params.id}")
