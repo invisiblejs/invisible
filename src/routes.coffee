@@ -1,11 +1,8 @@
-# mquery = require('mquery')
 mongo = require('mongodb')
-ObjectID = require('mongodb').ObjectID
-Invisible = require('invisible')
-
-db = undefined
+ObjectID = mongo.ObjectID
 
 uri = 'mongodb://127.0.0.1:27017/invisible'
+db = undefined
 
 mongo.connect uri, (err, database) ->
     throw err if err?
@@ -28,16 +25,55 @@ query = (req, res) ->
         res.send(results)
 
 save = (req, res) ->
-    res.send({id: 1, firstName: "John"})
+    col = db.collection(req.params.modelName)
+    col.insert req.body, safe:true, (err, result) ->
+        return next(err) if err?
+        res.send(200, result)
 
 show = (req, res) ->
     col = db.collection(req.params.modelName)
-    col.findOne {_id: new ObjectID(req.params.id)}, (err, result, a) ->
+
+    try
+        id = new ObjectID(req.params.id)
+    catch err
+        console.log('Invalid Object Id')
+        res.send(404)
+
+    col.findOne {_id: new ObjectID(req.params.id)}, (err, result) ->
         return next(err) if err?
-        res.send(result)
+        if result?
+            res.send(200, result)
+        else
+            res.send(404)
 
 update = (req, res) ->
-    res.send({id: req.params.id, firstName: "Greg"})
+    col = db.collection(req.params.modelName)
+
+    try
+        id = new ObjectID(req.params.id)
+    catch err
+        console.log('Invalid Object Id')
+        res.send(404)
+
+    col.findAndModify { _id: id}, [['_id','asc']], {$set: req.body}, {new: true, upsert: false}, (err, result) ->
+        return next(err) if err?
+        if result
+            res.send(200, result)
+        else
+            res.send(404)
 
 remove = (req, res) ->
-    res.send("delete model: #{req.params.modelName} id: #{req.params.id}")
+    col = db.collection(req.params.modelName)
+
+    try
+        id = new ObjectID(req.params.id)
+    catch err
+        console.log('Invalid Object Id')
+        res.send(404)
+
+    col.remove { _id: id}, (err, result) ->
+        return next(err) if err?
+        if result?
+            res.send(200)
+        else
+            res.send(404)
