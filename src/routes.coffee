@@ -1,24 +1,79 @@
+mongo = require('mongodb')
+ObjectID = mongo.ObjectID
+
+uri = 'mongodb://127.0.0.1:27017/invisible'
+db = undefined
+
+mongo.connect uri, (err, database) ->
+    throw err if err?
+    db = database
+    console.log("connected to #{uri}")
+
 
 module.exports = (app) ->
-	app.get("/models/:modelName", get_list)
-	app.post("/models/:modelName", post_list)
-
-	app.get("/models/:modelName/:id", get_detail)
-	app.put("/models/:modelName/:id", put_detail)
-	app.delete("/models/:modelName/:id", delete_detail)
+	app.get("/invisible/:modelName", query)
+	app.post("/invisible/:modelName", save)
+	app.get("/invisible/:modelName/:id", show)
+	app.put("/invisible/:modelName/:id", update)
+	app.delete("/invisible/:modelName/:id", remove)
 
 #rest controllers
-get_list = (req, res) -> 
-    res.send("get list of model: #{req.params.modelName}")
+query = (req, res) -> 
+    col = db.collection(req.params.modelName)
+    col.find().toArray (err, results) ->
+        return next(err) if err?
+        res.send(results)
 
-post_list = (req, res) ->
-    res.send({id: 1, firstName: "John"})
+save = (req, res) ->
+    col = db.collection(req.params.modelName)
+    col.insert req.body, safe:true, (err, result) ->
+        return next(err) if err?
+        res.send(200, result)
 
-get_detail = (req, res) ->
-    res.send("get detail of model: #{req.params.modelName} id: #{req.params.id}")
+show = (req, res) ->
+    col = db.collection(req.params.modelName)
 
-put_detail = (req, res) ->
-    res.send({id: req.params.id, firstName: "Greg"})
+    try
+        id = new ObjectID(req.params.id)
+    catch err
+        console.log('Invalid Object Id')
+        res.send(404)
 
-delete_detail = (req, res) ->
-    res.send("delete model: #{req.params.modelName} id: #{req.params.id}")
+    col.findOne {_id: new ObjectID(req.params.id)}, (err, result) ->
+        return next(err) if err?
+        if result?
+            res.send(200, result)
+        else
+            res.send(404)
+
+update = (req, res) ->
+    col = db.collection(req.params.modelName)
+
+    try
+        id = new ObjectID(req.params.id)
+    catch err
+        console.log('Invalid Object Id')
+        res.send(404)
+
+    col.findAndModify { _id: id}, [['_id','asc']], {$set: req.body}, {new: true, upsert: false}, (err, result) ->
+        return next(err) if err?
+        if result
+            res.send(200, result)
+        else
+            res.send(404)
+
+remove = (req, res) ->
+    col = db.collection(req.params.modelName)
+
+    try
+        id = new ObjectID(req.params.id)
+    catch err
+        console.log('Invalid Object Id')
+        res.send(404)
+
+    col.remove { _id: id}, (err, result) ->
+        return next(err) if err?
+        if result?
+            res.send(200)
+        else
+            res.send(404)
