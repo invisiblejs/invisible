@@ -39,9 +39,14 @@ buildClientModel = (modelName, BaseModel) ->
             
             @query: (opts, cb) -> 
                 console.log("querying")
+
+                processData = (data) ->
+                    models = (_.extend(new InvisibleModel(), d) for d in data)
+                    cb(models)
+
                 http.request(
                         {path: "/invisible/#{@_modelName}/", method: "GET"}, 
-                        handleResponse(cb)).end()
+                        handleResponse(processData)).end()
 
             save: () -> 
                 console.log("saving")
