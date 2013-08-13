@@ -19,37 +19,51 @@ Invisible =
         return InvisibleModel
 
 
-buildClientModel = (modelName, BaseModel)->
+handleResponse = (cb) ->
+    ###
+    Collects the response body, parses it as JSON and passes it to the callback.
+    ###
+    return (res) ->
+        fullBody = ''
+        res.on 'data', (chunk) -> 
+            fullBody += chunk
+        res.on 'end', () ->
+            data = JSON.parse(fullBody)
+            cb(data)
+
+
+buildClientModel = (modelName, BaseModel) ->
     class InvisibleModel extends BaseModel
             _modelName: modelName
+            @_modelName: modelName #FIXME ugly
             
-            @query: (opts)-> 
+            @query: (opts, cb) -> 
                 console.log("querying")
-                #TODO implement
-                return {}
+                http.request(
+                        {path: "/invisible/#{@_modelName}/", method: "GET"}, 
+                        handleResponse(cb)).end()
 
             save: () -> 
                 console.log("saving")
                 model = this
                 
-                update = (res) ->
-                    fullBody = ''
-                    res.on('data', (chunk) -> 
-                        fullBody += chunk)
-                    res.on('end', () ->
-                        console.log("updating model with #{fullBody}")
-                        _.extend(model, JSON.parse(fullBody)))
+                update = (data) ->
+                    console.log("updating model with" + JSON.stringify(data))
+                    _.extend(model, data)
 
                 if @id?
                     req = http.request(
-                        {path: "/models/#{@_modelName}/#{@id}/", method: "PUT"}, 
-                        update)
+                        {path: "/invisible/#{@_modelName}/#{@_id}/", method: "PUT",
+                        headers: { 'content-type': "application/json" }}, 
+                        handleResponse(update))
                 else
                     req = http.request(
-                        {path: "/models/#{@_modelName}/", method: "POST"}, 
-                        update)
+                        {path: "/invisible/#{@_modelName}/", method: "POST", 
+                        headers: { 'content-type': "application/json" }}, 
+                        handleResponse(update))
                 
-                req.end(JSON.stringify(this))
+                req.write(JSON.stringify(this))
+                req.end()
                 return
             
             delete: ()-> 
@@ -59,7 +73,7 @@ buildClientModel = (modelName, BaseModel)->
                         #TODO handle error
                         console.log("deleted")
 
-                    http.request({path: "/models/#{@_modelName}/#{@id}/", method: "DELETE"}, 
+                    http.request({path: "/invisible/#{@_modelName}/#{@_id}/", method: "DELETE"}, 
                         cb).end()
                 return
 
@@ -83,7 +97,7 @@ buildServerModel = (modelName, BaseModel)->
                 console.log("server deleting")
                 #TODO implement
                 return
-
+ 
     return InvisibleModel
 
 if isClient()
