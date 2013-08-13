@@ -37,6 +37,15 @@ buildClientModel = (modelName, BaseModel) ->
             _modelName: modelName
             @_modelName: modelName #FIXME ugly
             
+            @findById: (id, cb) -> 
+                processData = (data) ->
+                    model = _.extend(new InvisibleModel(), data)
+                    cb(model)
+
+                http.request(
+                        {path: "/invisible/#{@_modelName}/#{id}", method: "GET"}, 
+                        handleResponse(processData)).end()
+
             @query: (opts, cb) -> 
                 console.log("querying")
 
