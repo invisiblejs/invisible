@@ -20,7 +20,12 @@ module.exports = (app) ->
 #rest controllers
 query = (req, res) -> 
     col = db.collection(req.params.modelName)
-    col.find().toArray (err, results) ->
+    if req.query.query?
+        criteria = JSON.parse(req.query.query)
+    else
+        criteria = {}
+        
+    col.find(criteria).toArray (err, results) ->
         return next(err) if err?
         res.send(results)
 

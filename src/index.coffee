@@ -49,12 +49,19 @@ buildClientModel = (modelName, BaseModel) ->
             @query: (opts, cb) -> 
                 console.log("querying")
 
+                #handle optional arg
+                if cb?
+                    qs = "?query=" + encodeURIComponent(JSON.stringify(opts))
+                else
+                    cb = opts
+                    qs = ''
+
                 processData = (data) ->
                     models = (_.extend(new InvisibleModel(), d) for d in data)
                     cb(models)
-
+                
                 http.request(
-                        {path: "/invisible/#{@_modelName}/", method: "GET"}, 
+                        {path: "/invisible/#{@_modelName}/#{qs}", method: "GET"}, 
                         handleResponse(processData)).end()
 
             save: () -> 
