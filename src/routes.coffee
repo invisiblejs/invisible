@@ -28,7 +28,7 @@ save = (req, res) ->
     col = db.collection(req.params.modelName)
     col.insert req.body, safe:true, (err, result) ->
         return next(err) if err?
-        res.send(200, result)
+        res.send(200, result[0])
 
 show = (req, res) ->
     col = db.collection(req.params.modelName)
