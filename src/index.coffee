@@ -73,7 +73,7 @@ buildClientModel = (modelName, BaseModel) ->
             
             delete: ()-> 
                 console.log("deleting")
-                if @id?
+                if @_id?
                     cb = (err, res) ->
                         #TODO handle error
                         console.log("deleted")
