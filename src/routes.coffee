@@ -39,6 +39,7 @@ save = (req, res) ->
 show = (req, res) ->
     #TODO error handling
     Model = Invisible[req.params.modelName]
+    
     Model.findById req.params.id, (result) ->
         console.log(result)
         if result?
@@ -46,7 +47,7 @@ show = (req, res) ->
             res.send(200, obj)
         else
             res.send(404)
-    
+
 
 update = (req, res) ->
     col = db.collection(req.params.modelName)

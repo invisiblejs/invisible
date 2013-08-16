@@ -109,7 +109,6 @@ if not isClient()
     uri = 'mongodb://127.0.0.1:27017/invisible'
     db = undefined
 
-    console.log("TRYING TO CONNECT MAN")
     mongo.connect uri, (err, database) ->
         throw err if err?
         console.log("connected to #{uri}")
