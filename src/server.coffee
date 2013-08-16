@@ -8,12 +8,16 @@ module.exports = (rootFolder, opt) ->
     src = undefined
 
     b = browserify()
+    b.ignore 'mongodb'
+
 
     # walk through model files
     modelFiles = fs.readdirSync(rootFolder)
     for modelFile in modelFiles
         console.log(modelFile)
         b.add(path.join(rootFolder, modelFile))
+        #Require all bundled models so they can be accesed in the server
+        require(path.join(rootFolder, modelFile))
 
     # Support for CoffeeScript
     b.transform(coffeeify)
