@@ -47,8 +47,6 @@ buildClientModel = (modelName, BaseModel) ->
                         handleResponse(processData)).end()
 
             @query: (opts, cb) -> 
-                console.log("querying")
-
                 #handle optional arg
                 if cb?
                     qs = "?query=" + encodeURIComponent(JSON.stringify(opts))
@@ -64,15 +62,15 @@ buildClientModel = (modelName, BaseModel) ->
                         {path: "/invisible/#{@_modelName}/#{qs}", method: "GET"}, 
                         handleResponse(processData)).end()
 
-            save: () -> 
-                console.log("saving")
+            save: (cb) -> 
                 model = this
                 
                 update = (data) ->
-                    console.log("updating model with" + JSON.stringify(data))
                     _.extend(model, data)
+                    if cb?
+                        cb(model)
 
-                if @id?
+                if @_id?
                     req = http.request(
                         {path: "/invisible/#{@_modelName}/#{@_id}/", method: "PUT",
                         headers: { 'content-type': "application/json" }}, 
@@ -87,38 +85,82 @@ buildClientModel = (modelName, BaseModel) ->
                 req.end()
                 return
             
-            delete: ()-> 
-                console.log("deleting")
+            delete: (cb)-> 
                 if @_id?
-                    cb = (err, res) ->
+                    model = this
+                    
+                    _cb = (err, res) ->
                         #TODO handle error
                         console.log("deleted")
+                        if cb?
+                            cb(model)
 
                     http.request({path: "/invisible/#{@_modelName}/#{@_id}/", method: "DELETE"}, 
-                        cb).end()
+                        _cb).end()
                 return
 
     return InvisibleModel
 
+#TODO refactor, put each model in different files, and require only one
+if not isClient()
+
+    mongo = require('mongodb')
+    ObjectID = mongo.ObjectID
+
+    uri = 'mongodb://127.0.0.1:27017/invisible'
+    db = undefined
+
+    mongo.connect uri, (err, database) ->
+        throw err if err?
+        console.log("connected to #{uri}")
+        db = database
+
 buildServerModel = (modelName, BaseModel)->
+
     class InvisibleModel extends BaseModel
             _modelName: modelName
+            @_modelName: modelName #FIXME ugly
             
-            @query: (opts)-> 
-                console.log("server querying")
-                #TODO implement
-                return {}
+            @findById: (id, cb) -> 
+                col = db.collection(@_modelName)
+                col.findOne {_id: new ObjectID(id)}, (err, result) ->
+                    console.log(err) if err or not result?
+                    model = _.extend(new InvisibleModel(), result)
+                    cb(model)
+            
+            @query: (opts, cb) ->
+                col = db.collection(@_modelName)
+                if not cb?
+                    cb = opts
+                    opts = {}
+                    
+                col.find(opts).toArray (err, results) ->
+                    console.log(err) if err or not result?
+                    models = (_.extend(new InvisibleModel(), r) for r in results)
+                    cb(models)   
 
-            save: () -> 
-                console.log("server saving")
-                #TODO implement
-                return
+            save: (cb) -> 
+                model = this
+                update = (err, result) ->
+                    console.log(err) if err or not result?
+                    model = _.extend(model, result)
+                    if cb?
+                        cb(model)
+
+                col = db.collection(@_modelName)
+                data = JSON.parse JSON.stringify this
+                if data._id?
+                    data._id = new ObjectID(data._id)
+                col.save data, update
             
-            delete: ()-> 
-                console.log("server deleting")
-                #TODO implement
-                return
- 
+            delete: (cb)-> 
+                model = this
+                col = db.collection(@_modelName)
+                col.remove {_id: ObjectID(@_id)}, (err, result) ->
+                    console.log(err) if err or not result?
+                    if cb?
+                        cb(result)
+
     return InvisibleModel
 
 if isClient()
