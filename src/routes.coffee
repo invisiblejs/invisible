@@ -36,8 +36,6 @@ save = (req, res) ->
     instance = new Model()
     _.extend(instance, req.body)
     instance.save (instance) ->
-        console.log("SAVED INSTANCE")
-        console.log(instance)
         res.send(200, instance)
 
 show = (req, res) ->
@@ -63,17 +61,11 @@ update = (req, res) ->
             res.send(404)
 
 remove = (req, res) ->
-    col = db.collection(req.params.modelName)
+    Model = Invisible[req.params.modelName]
 
-    try
-        id = new ObjectID(req.params.id)
-    catch err
-        console.log('Invalid Object Id')
-        res.send(404)
-
-    col.remove { _id: id}, (err, result) ->
-        return next(err) if err?
-        if result?
-            res.send(200)
+    Model.findById req.params.id, (instance) ->
+        if instance?
+            instance.delete (result) ->
+                res.send(200)
         else
             res.send(404)

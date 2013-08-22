@@ -47,8 +47,6 @@ buildClientModel = (modelName, BaseModel) ->
                         handleResponse(processData)).end()
 
             @query: (opts, cb) -> 
-                console.log("querying")
-
                 #handle optional arg
                 if cb?
                     qs = "?query=" + encodeURIComponent(JSON.stringify(opts))
@@ -65,7 +63,6 @@ buildClientModel = (modelName, BaseModel) ->
                         handleResponse(processData)).end()
 
             save: (cb) -> 
-                console.log("saving")
                 model = this
                 
                 update = (data) ->
@@ -89,7 +86,6 @@ buildClientModel = (modelName, BaseModel) ->
                 return
             
             delete: (cb)-> 
-                console.log("deleting")
                 if @_id?
                     model = this
                     
@@ -127,10 +123,8 @@ buildServerModel = (modelName, BaseModel)->
             
             @findById: (id, cb) -> 
                 col = db.collection(@_modelName)
-
                 col.findOne {_id: new ObjectID(id)}, (err, result) ->
                     console.log(err) if err or not result?
-
                     model = _.extend(new InvisibleModel(), result)
                     cb(model)
             
@@ -155,14 +149,18 @@ buildServerModel = (modelName, BaseModel)->
 
                 col = db.collection(@_modelName)
                 data = JSON.parse JSON.stringify this
-                col.save data, {upsert: false}, update
-                return
+                if data._id?
+                    data._id = new ObjectID(data._id)
+                col.save data, update
             
-            delete: ()-> 
-                console.log("server deleting")
-                #TODO implement
-                return
- 
+            delete: (cb)-> 
+                model = this
+                col = db.collection(@_modelName)
+                col.remove {_id: ObjectID(@_id)}, (err, result) ->
+                    console.log(err) if err or not result?
+                    if cb?
+                        cb(result)
+
     return InvisibleModel
 
 if isClient()
