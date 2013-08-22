@@ -64,15 +64,16 @@ buildClientModel = (modelName, BaseModel) ->
                         {path: "/invisible/#{@_modelName}/#{qs}", method: "GET"}, 
                         handleResponse(processData)).end()
 
-            save: () -> 
+            save: (cb) -> 
                 console.log("saving")
                 model = this
                 
                 update = (data) ->
-                    console.log("updating model with" + JSON.stringify(data))
                     _.extend(model, data)
+                    if cb?
+                        cb(model)
 
-                if @id?
+                if @_id?
                     req = http.request(
                         {path: "/invisible/#{@_modelName}/#{@_id}/", method: "PUT",
                         headers: { 'content-type': "application/json" }}, 
@@ -87,15 +88,19 @@ buildClientModel = (modelName, BaseModel) ->
                 req.end()
                 return
             
-            delete: ()-> 
+            delete: (cb)-> 
                 console.log("deleting")
                 if @_id?
-                    cb = (err, res) ->
+                    model = this
+                    
+                    _cb = (err, res) ->
                         #TODO handle error
                         console.log("deleted")
+                        if cb?
+                            cb(model)
 
                     http.request({path: "/invisible/#{@_modelName}/#{@_id}/", method: "DELETE"}, 
-                        cb).end()
+                        _cb).end()
                 return
 
     return InvisibleModel
@@ -138,11 +143,19 @@ buildServerModel = (modelName, BaseModel)->
                 col.find(opts).toArray (err, results) ->
                     console.log(err) if err or not result?
                     models = (_.extend(new InvisibleModel(), r) for r in results)
-                    cb(models)    
+                    cb(models)   
 
-            save: () -> 
-                console.log("server saving")
-                #TODO implement
+            save: (cb) -> 
+                model = this
+                update = (err, result) ->
+                    console.log(err) if err or not result?
+                    model = _.extend(model, result)
+                    if cb?
+                        cb(model)
+
+                col = db.collection(@_modelName)
+                data = JSON.parse JSON.stringify this
+                col.save data, {upsert: false}, update
                 return
             
             delete: ()-> 
