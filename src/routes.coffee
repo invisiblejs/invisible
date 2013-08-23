@@ -1,14 +1,4 @@
-mongo = require('mongodb')
-ObjectID = mongo.ObjectID
 _ = require("underscore")
-
-uri = 'mongodb://127.0.0.1:27017/invisible'
-db = undefined
-
-# mongo.connect uri, (err, database) ->
-#     throw err if err?
-#     db = database
-#     console.log("connected to #{uri}")
 
 Invisible = require('./index')
 
