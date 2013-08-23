@@ -51,7 +51,7 @@ module.exports = (modelName, BaseModel)->
             delete: (cb)-> 
                 model = this
                 col = db.collection(@_modelName)
-                col.remove {_id: ObjectID(@_id)}, (err, result) ->
+                col.remove {_id: @_id}, (err, result) ->
                     console.log(err) if err or not result?
                     if cb?
                         cb(result)
