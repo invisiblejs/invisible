@@ -16,8 +16,8 @@ module.exports = (modelName, BaseModel)->
             _modelName: modelName
             @_modelName: modelName #FIXME ugly
             
-            @findById: (id, cb) -> 
-                col = db.collection(@_modelName)
+            @findById: (id, cb) ->
+                col = db.collection(@_modelName) 
                 col.findOne {_id: new ObjectID(id)}, (err, result) ->
                     console.log(err) if err or not result?
                     model = _.extend(new InvisibleModel(), result)

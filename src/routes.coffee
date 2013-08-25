@@ -1,6 +1,5 @@
 _ = require("underscore")
-
-Invisible = require('./index')
+Invisible = require('./invisible')
 
 module.exports = (app) ->
 	app.get("/invisible/:modelName", query)

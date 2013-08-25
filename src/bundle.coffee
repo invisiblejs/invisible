@@ -8,13 +8,13 @@ module.exports = (rootFolder, opt) ->
     src = undefined
 
     b = browserify()
-    b.ignore 'mongodb'
-
+    b.ignore('mongodb')
+    b.ignore('./bundle')
+    b.ignore('./routes')
 
     # walk through model files
     modelFiles = fs.readdirSync(rootFolder)
     for modelFile in modelFiles
-        console.log(modelFile)
         b.add(path.join(rootFolder, modelFile))
         #Require all bundled models so they can be accesed in the server
         require(path.join(rootFolder, modelFile))
@@ -34,6 +34,5 @@ module.exports = (rootFolder, opt) ->
         if req.path != '/invisible.js'
             return next()
 
-        console.log('Invisible: serve bundle')
         res.contentType('application/javascript')
         res.send(src)
