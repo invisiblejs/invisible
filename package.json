@@ -27,6 +27,7 @@
     "grunt-contrib-coffee": "~0.7.0",
     "grunt": "~0.4.1",
     "grunt-contrib-watch": "~0.5.2",
+    "grunt-cli": "0.1.*",
     "grunt-mocha-test": "~0.6.3"
   }
 }
