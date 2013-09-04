@@ -32,4 +32,4 @@ module.exports = (grunt) ->
     
     # Compile CoffeeScript, run tests, watch changes    
     grunt.registerTask("default", ["watch"])
-    grunt.registerTask("test", ["mochaTest"])
+    grunt.registerTask("test", ["coffee","mochaTest"])
