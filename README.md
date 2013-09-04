@@ -8,7 +8,7 @@ model reuse in the client and the server.
 
 First wire up Invisible into your app:
 
-```
+```coffeescript
 express = require("express")
 invisible = require("invisible")
 app = express()
@@ -17,7 +17,7 @@ invisible.server(app, path.join(__dirname, "models"))
 
 To make your models available everywhere, define them and call `Invisible.createModel`
 
-```
+```coffeescript
 Invisible = require("invisible")
 crypto = require("crypto")
 _s = require("underscore.string")
@@ -37,7 +37,7 @@ module.exports = Invisible.createModel("Person", Person)
 
 Require your models as usual in the server:
 
-```
+```coffeescript
 Person = require("models/person")
 john = new Person("John", "Doe", "john.doe@mail.com")
 john.fullName() #John Doe
@@ -46,11 +46,11 @@ john.fullName() #John Doe
 In the client, just add the invisible script and your models will be available under the Invisible 
 namespace:
 
-```
+```html
 <script src="invisible.js"></script>
 <script>
-jane = new Invisible.Person("Jane", "Doe", "jane.doee@mail.com")
-alert jane.fullName() #Jane Doe
+jane = new Invisible.Person("Jane", "Doe", "jane.doe@mail.com");
+alert(jane.fullName()); //Jane Doe
 </script>
 ```
 
@@ -58,8 +58,9 @@ alert jane.fullName() #Jane Doe
 Invisible extends your models to handle your MongoDB persistence, no matter if you are at the client or 
 the server:
 
-```
-jane.save()
-Invisible.Person.query firstName: "Jane", (results) -> 
-                                            console.log results[0].fullName() #Jane Doe
+```javascript
+jane.save();
+Invisible.Person.query({firstName: "Jane"}, function(results){
+    console.log(results[0].fullName()); //Jane Doe
+    });
 ```
