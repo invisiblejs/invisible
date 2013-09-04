@@ -49,8 +49,8 @@ namespace:
 ```html
 <script src="invisible.js"></script>
 <script>
-jane = new Invisible.Person("Jane", "Doe", "jane.doe@mail.com");
-alert(jane.fullName()); //Jane Doe
+    jane = new Invisible.Person("Jane", "Doe", "jane.doe@mail.com");
+    alert(jane.fullName()); //Jane Doe
 </script>
 ```
 
@@ -62,5 +62,5 @@ the server:
 jane.save();
 Invisible.Person.query({firstName: "Jane"}, function(results){
     console.log(results[0].fullName()); //Jane Doe
-    });
+});
 ```
