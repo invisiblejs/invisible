@@ -48,7 +48,7 @@ Require your models as usual in the server:
 ```javascript
 Person = require("./models/person");
 john = new Person("John", "Doe", "john.doe@mail.com");
-john.fullName(); #John Doe
+john.fullName(); //John Doe
 ```
 
 In the client, just add the invisible script and your models will be available under the Invisible 
