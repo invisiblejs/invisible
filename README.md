@@ -1,4 +1,6 @@
-invisible ![image](https://david-dm.org/sammla/invisible.png)
+Invisible.js ![image](https://david-dm.org/sammla/invisible.png)
 =========
 
-JS models on client and server
+Invisible is a JavaScript (and CoffeeScript!) library that leverages 
+`browserify <https://github.com/substack/node-browserify>`_ to achieve the Holy Grail of web programming: 
+model reuse in the client and the server.
