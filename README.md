@@ -38,7 +38,7 @@ module.exports = Invisible.createModel("Person", Person)
 Require your models as usual in the server:
 
 ```coffeescript
-Person = require("models/person")
+Person = require("./models/person")
 john = new Person("John", "Doe", "john.doe@mail.com")
 john.fullName() #John Doe
 ```
