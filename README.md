@@ -6,9 +6,14 @@ model reuse in the client and the server.
 
 ## Usage
 
-First wire up Invisible middleware and REST routes:
+First wire up Invisible into your app:
 
-
+```
+express = require("express")
+invisible = require("invisible")
+app = express()
+invisible.server(app, path.join(__dirname, "models"))
+```
 
 To make your models available everywhere, define them and call `Invisible.createModel`
 
@@ -32,9 +37,28 @@ module.exports = Invisible.createModel("Person", Person)
 
 Require your models as usual in the server:
 
+```
+Person = require("models/person")
+john = new Person("John", "Doe", "john.doe@mail.com")
+john.fullName() #John Doe
+```
+
 In the client, just add the invisible script and your models will be available under the Invisible 
 namespace:
+
+```
+<script>
+jane = new Invisible.Person("Jane", "Doe", "jane.doee@mail.com")
+alert jane.fullName() #Jane Doe
+</script>
+```
 
 
 Invisible extends your models to handle your MongoDB persistence, no matter if you are at the client or 
 the server:
+
+```
+jane.save()
+Invisible.Person.query firstName: "Jane", (results) -> 
+                                            console.log results[0].fullName() #Jane Doe
+```
