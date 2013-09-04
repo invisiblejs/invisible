@@ -8,39 +8,47 @@ model reuse in the client and the server.
 
 First wire up Invisible into your app:
 
-```coffeescript
-express = require("express")
-invisible = require("invisible")
-app = express()
+```javascript
+express = require("express");
+path = require("path");
+invisible = require("invisible");
+
+app = express();
 invisible.server(app, path.join(__dirname, "models"))
 ```
 
 To make your models available everywhere, define them and call `Invisible.createModel`
 
-```coffeescript
-Invisible = require("invisible")
-crypto = require("crypto")
-_s = require("underscore.string")
+```javascript
+Invisible = require("invisible");
+crypto = require("crypto");
+_s = require("underscore.string");
 
-class Person
-    constructor: (@firstName, @lastName, @email) ->
-    
-    fullName: () -> "#{@firstName} #{@lastName}"
+function Person(firstName, lastName, email){
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.email = email;
+}
 
-    getAvatarUrl: () ->
-        cleanMail = _s.trim(@email).toLowerCase()
-        hash = crypto.createHash("md5").update(cleanMail).digest("hex")
-        return "http://www.gravatar.com/avatar/" + hash
+Person.prototype.fullName = function(){
+    return this.firstName + ' ' + this.lastName;
+}
 
-module.exports = Invisible.createModel("Person", Person)
+Person.prototype.getAvatarUrl = function(){
+    cleanMail = _s.trim(this.email).toLowerCase();
+    hash = crypto.createHash("md5").update(cleanMail).digest("hex");
+    return "http://www.gravatar.com/avatar/" + hash;
+}
+
+module.exports = Invisible.createModel("Person", Person);
 ```
 
 Require your models as usual in the server:
 
-```coffeescript
-Person = require("./models/person")
-john = new Person("John", "Doe", "john.doe@mail.com")
-john.fullName() #John Doe
+```javascript
+Person = require("./models/person");
+john = new Person("John", "Doe", "john.doe@mail.com");
+john.fullName(); #John Doe
 ```
 
 In the client, just add the invisible script and your models will be available under the Invisible 
