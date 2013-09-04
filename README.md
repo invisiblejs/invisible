@@ -47,6 +47,7 @@ In the client, just add the invisible script and your models will be available u
 namespace:
 
 ```
+<script src="invisible.js"></script>
 <script>
 jane = new Invisible.Person("Jane", "Doe", "jane.doee@mail.com")
 alert jane.fullName() #Jane Doe
