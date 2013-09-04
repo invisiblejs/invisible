@@ -1,4 +1,4 @@
-# Invisible.js ![image](https://david-dm.org/sammla/invisible.png) [![Build Status](https://secure.travis-ci.org/sammla/invisible.png)](http://travis-ci.org/sammla/invisible)
+# Invisible.js [![Build Status](https://secure.travis-ci.org/sammla/invisible.png)](http://travis-ci.org/sammla/invisible) ![image](https://david-dm.org/sammla/invisible.png)
 
 Invisible is a JavaScript (and CoffeeScript!) library that leverages 
 [browserify](https://github.com/substack/node-browserify) to achieve the Holy Grail of web programming: 
