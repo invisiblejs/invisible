@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "DRY models for client and server",
   "main": "index.js",
+  "prepublish": "grunt coffee",
   "scripts": {
     "test": "grunt test"
   },
