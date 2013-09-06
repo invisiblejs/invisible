@@ -2,7 +2,7 @@ mongo = require('mongodb')
 _ = require("underscore")
 
 ObjectID = mongo.ObjectID
-uri = 'mongodb://127.0.0.1:27017/invisible'
+uri = global.invisibledb or 'mongodb://127.0.0.1:27017/invisible'
 db = undefined
 
 mongo.connect uri, (err, database) ->
@@ -20,6 +20,8 @@ module.exports = (modelName, BaseModel)->
                 col = db.collection(@_modelName) 
                 col.findOne {_id: new ObjectID(id)}, (err, result) ->
                     console.log(err) if err or not result?
+                    
+                    #FIXME should'nt do this if no result
                     model = _.extend(new InvisibleModel(), result)
                     cb(model)
             
@@ -41,7 +43,6 @@ module.exports = (modelName, BaseModel)->
                     model = _.extend(model, result)
                     if cb?
                         cb(model)
-
                 col = db.collection(@_modelName)
                 data = JSON.parse JSON.stringify this
                 if data._id?
