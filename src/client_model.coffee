@@ -19,6 +19,7 @@ module.exports = (modelName, BaseModel) ->
             _modelName: modelName
             @_modelName: modelName #FIXME ugly
             
+            #FIXME handle errors
             @findById: (id, cb) -> 
                 processData = (data) ->
                     model = _.extend(new InvisibleModel(), data)
@@ -28,6 +29,7 @@ module.exports = (modelName, BaseModel) ->
                         {path: "/invisible/#{@_modelName}/#{id}", method: "GET"}, 
                         handleResponse(processData)).end()
 
+            #FIXME add query
             @query: (opts, cb) -> 
                 #handle optional arg
                 if cb?
@@ -52,11 +54,14 @@ module.exports = (modelName, BaseModel) ->
                     if cb?
                         cb(model)
 
+                #FIXME handle errors
                 if @_id?
                     req = http.request(
                         {path: "/invisible/#{@_modelName}/#{@_id}/", method: "PUT",
                         headers: { 'content-type': "application/json" }}, 
                         handleResponse(update))
+                
+                #FIXME handle errors
                 else
                     req = http.request(
                         {path: "/invisible/#{@_modelName}/", method: "POST", 
@@ -67,6 +72,7 @@ module.exports = (modelName, BaseModel) ->
                 req.end()
                 return
             
+            #FIXME handle errors
             delete: (cb)-> 
                 if @_id?
                     model = this

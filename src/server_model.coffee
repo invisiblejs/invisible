@@ -47,10 +47,15 @@ module.exports = (modelName, BaseModel)->
             save: (cb) -> 
                 model = this
                 update = (err, result) ->
-                    console.log(err) if err or not result?
+                    if err?
+                        return cb(err)
+                    if not result?
+                        return cb(new Error("No result when saving"))
+
                     model = _.extend(model, result)
                     if cb?
-                        cb(model)
+                        return cb(null, model)
+
                 col = db.collection(@_modelName)
                 data = JSON.parse JSON.stringify this
                 if data._id?
@@ -61,8 +66,12 @@ module.exports = (modelName, BaseModel)->
                 model = this
                 col = db.collection(@_modelName)
                 col.remove {_id: @_id}, (err, result) ->
-                    console.log(err) if err or not result?
                     if cb?
-                        cb(result)
+                        if err?
+                            return cb(err)
+                        if not result?
+                            return cb(new Error("No result when saving"))
+
+                        return cb(null, result)
 
     return InvisibleModel

@@ -60,19 +60,11 @@ describe 'InvisibleModel', () ->
                 done()
 
     it 'should remove the document on delete', (done) ->
-        assert(martin._id?)
-        martin.delete ()->
+        martin.delete (err)->
+            assert(not err?)
             db.collection("Person").findOne {_id: martin._id}, (err, result) ->
                 assert(not result?)
                 done()
-
-    it 'should raise an error if deleting an unexistent instance', (done)->
-        #TODO
-        done()
-
-    it 'should raise an error if deleting an unexistent instance', (done)->
-        #TODO
-        done()
 
     it 'should find instance by id', (done) ->
         martin._id = undefined
