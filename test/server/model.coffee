@@ -66,39 +66,56 @@ describe 'InvisibleModel', () ->
                 assert(not result?)
                 done()
 
+    it 'should raise an error if deleting an unexistent instance', (done)->
+        #TODO
+        done()
+
+    it 'should raise an error if deleting an unexistent instance', (done)->
+        #TODO
+        done()
+
     it 'should find instance by id', (done) ->
         martin._id = undefined
         martin.save () ->
             id = martin._id.toString()
-            Invisible.Person.findById id, (result)->
+            Invisible.Person.findById id, (e, result) ->
                 assert.equal(martin.name, result.name)
                 assert.equal(martin._id.toString(), result._id.toString())
                 done()
+
+    it 'should raise an error for finding by an unexistent id', (done) ->
+        nonExistentId = '507f1f77bcf86cd700000000'
+        Invisible.Person.findById nonExistentId, (e, result)->
+            assert(e)
+            done()
+
+    it 'should raise an error for finding by an invalid id', (done)->
+        assert.throws () ->
+            Invisible.Person.findById "asdadadsd", (e, result)->
+                assert.fail("Shouldn't call this")
+            , Error
+        done()
 
     it 'should find instances with query', (done) ->
         facundo.save () ->
             assert(facundo._id)
             assert(martin._id)
-            Invisible.Person.query (results)->
+            Invisible.Person.query (e, results)->
                 assert.equal(results.length, 2)
                 assert(facundo.name == results[0].name or facundo.name == results[1].name)
                 assert(martin.name == results[0].name or martin.name == results[1].name)
                 done()
 
-    it 'should apply filters on query', () ->
-        Invisible.Person.query name: "Facundo", (results)->
+    it 'should apply filters on query', (done) ->
+        Invisible.Person.query name: "Facundo", (e, results)->
             assert.equal(results.length, 1)
             assert.equal(results[0].name, "Facundo")
             assert.equal(facundo._id.toString(), results[0]._id.toString())
             done()
 
-# TODO test unhappy paths
-    #find unexistent id
-    #invalid id
-    #update unexistent instance
-    #delete unexistent instance
-    #invalid mongo filters on query
+    it 'should apply query options', (done) ->
+        Invisible.Person.query {}, limit: 1, (e, results)->
+            assert.equal(results.length, 1)
+            done()
 
 # TODO should the user handle string ids, mongo ids or both?
-# TODO invisible model equals?
-# TODO should the id be erased after save?

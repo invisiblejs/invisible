@@ -19,22 +19,30 @@ module.exports = (modelName, BaseModel)->
             @findById: (id, cb) ->
                 col = db.collection(@_modelName) 
                 col.findOne {_id: new ObjectID(id)}, (err, result) ->
-                    console.log(err) if err or not result?
-                    
-                    #FIXME should'nt do this if no result
+                    if err?
+                        return cb(err)
+                    if not result?
+                        return cb(new Error("Inexistent id"))
+
                     model = _.extend(new InvisibleModel(), result)
-                    cb(model)
+                    cb(null, model)
             
-            @query: (opts, cb) ->
+            @query: (query, opts, cb) ->
                 col = db.collection(@_modelName)
                 if not cb?
-                    cb = opts
+                    if not opts?
+                        cb = query
+                        query = {}
+                    else
+                        cb = opts
                     opts = {}
                     
-                col.find(opts).toArray (err, results) ->
-                    console.log(err) if err or not result?
+                col.find(query, {}, opts).toArray (err, results) ->
+                    if err
+                        return cb(err)
+
                     models = (_.extend(new InvisibleModel(), r) for r in results)
-                    cb(models)   
+                    cb(null, models)
 
             save: (cb) -> 
                 model = this
