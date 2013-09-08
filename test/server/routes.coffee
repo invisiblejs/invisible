@@ -1,1 +1,89 @@
-# TODO test routes, happy and unhappy paths
+assert = require('assert')
+Invisible = require('../../')
+request = require('supertest')
+mongo = require('mongodb')
+express = require('express')
+path = require('path')
+
+app = express()
+app.use express.bodyParser()
+require('../../lib/routes')(app)
+
+db = undefined
+before (done) ->
+    global.invisibledb = 'mongodb://127.0.0.1:27017/invisible-test'
+    
+    mongo.connect global.invisibledb, (err, database) ->
+        db = database
+        db.dropDatabase(done)
+
+describe 'REST routes', () ->
+
+    person_id = undefined
+
+    before () ->
+        class Person
+            constructor: (@name) ->
+            getName: ()-> return @name
+
+        Invisible.createModel('Person', Person)
+
+    it 'should create a new instance on POST', (done) ->
+        request(app)
+        .post('/invisible/Person/')
+        .send({name: "Facundo"})
+        .end (err, res) ->
+            assert.equal(res.statusCode, 200)
+            assert not err
+            assert(res.body._id)
+            person_id = res.body._id #lazy ass
+            assert.equal(res.body.name, "Facundo")
+            done()
+
+    it 'should update instance on PUT', (done) ->
+        request(app)
+        .put('/invisible/Person/' + person_id)
+        .send({name: "Martin"})
+        .end (err, res) ->
+            assert.equal(res.statusCode, 200)
+            assert not err
+            assert.equal(res.body._id, person_id)
+            assert.equal(res.body.name, "Martin")
+            done()
+
+
+    it 'should return instance on GET id', (done) ->
+        request(app)
+        .get('/invisible/Person/' + person_id)
+        .end (err, res) ->
+            assert.equal(res.statusCode, 200)
+            assert not err
+            assert.equal(res.body._id, person_id)
+            assert.equal(res.body.name, "Martin")
+            done()
+
+    it 'should return error on GET unexistent id', (done) ->
+        nonExistentId = '507f1f77bcf86cd700000000'
+        request(app)
+        .get('/invisible/Person/' + nonExistentId)
+        .end (err, res) ->
+            assert.equal(res.statusCode, 404)
+            done()
+
+    #FIXME mongo outputs to console
+    #FIXME check that client uses status codes to identify errors and not just http err
+    it 'should return error on GET invalid id', (done) ->
+        request(app)
+        .get('/invisible/Person/1234')
+        .end (err, res) ->
+            assert.equal(res.statusCode, 500)
+            done()
+
+    it 'should remove instance on DELETE', (done) ->
+        done()
+
+    it 'should return list of instances on GET list', (done) ->
+        done()
+
+    it 'should correctly parse query criteria an opts in GET list', (done) ->
+        done()

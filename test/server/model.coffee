@@ -8,7 +8,6 @@ class Person
 
 
 db = undefined
-
 before (done) ->
     global.invisibledb = 'mongodb://127.0.0.1:27017/invisible-test'
     

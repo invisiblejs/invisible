@@ -46,13 +46,16 @@ show = (req, res) ->
 update = (req, res) ->
     Model = Invisible[req.params.modelName]
     
-    Model.findById req.params.id, (e, instance) ->
-        if instance?
-            _.extend(instance, req.body)
-            instance.save (e, instance) ->
-                res.send(200, instance)
-        else
-            res.send(404)
+    Model.findById req.params.id, (error, instance) ->
+        try
+            if instance?
+                _.extend(instance, req.body)
+                instance.save (e, instance) ->
+                    res.send(200, instance)
+            else
+                res.send(404)
+        catch e
+            res.send(500, e)
 
 remove = (req, res) ->
     Model = Invisible[req.params.modelName]
