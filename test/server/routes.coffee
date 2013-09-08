@@ -68,7 +68,6 @@ describe 'REST routes', () ->
             assert.equal(res.statusCode, 404)
             done()
 
-    #FIXME check that client uses status codes to identify errors and not just http err
     it 'should return error on GET invalid id', (done) ->
         request(app)
         .get('/invisible/Person/1234')
