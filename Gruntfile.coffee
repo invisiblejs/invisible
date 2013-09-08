@@ -13,7 +13,7 @@ module.exports = (grunt) ->
             test:
                 options:
                     nospawn: false
-                files: ['src/{,**/}*.coffee', 'test/server/{,**/}*.coffee']
+                files: ['src/{,**/}*.coffee', 'test/server/{,**/}*.coffee', 'test/client/{,**/}*.coffee']
                 tasks: ['mochaTest']
         coffee:
             compile:
@@ -26,7 +26,7 @@ module.exports = (grunt) ->
             server:
                 options:
                     reporter: 'spec'
-                src: ['test/server/{,**/}*.coffee']
+                src: ['test/server/{,**/}*.coffee', 'test/client/{,**/}*.coffee']
 
     
     # Compile CoffeeScript, run tests, watch changes    

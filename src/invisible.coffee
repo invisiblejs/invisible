@@ -4,8 +4,6 @@ module.exports = Invisible = {}
 Invisible.isClient = () -> window?
 
 Invisible.createModel = (modelName, Model) ->
-    console.log('Creating a Invisible Model: ' + modelName)
-
     if Invisible.isClient()
         InvisibleModel = require('./client_model')(modelName, Model)
     else

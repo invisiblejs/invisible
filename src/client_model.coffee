@@ -23,24 +23,29 @@ module.exports = (modelName, BaseModel) ->
             @findById: (id, cb) -> 
                 processData = (data) ->
                     model = _.extend(new InvisibleModel(), data)
-                    cb(model)
+                    cb(null, model)
 
                 http.request(
-                        {path: "/invisible/#{@_modelName}/#{id}", method: "GET"}, 
+                        {path: "/invisible/#{@_modelName}/#{id}/", method: "GET"}, 
                         handleResponse(processData)).end()
 
             #FIXME add query
-            @query: (opts, cb) -> 
+            @query: (query, opts, cb) -> 
                 #handle optional arg
-                if cb?
-                    qs = "?query=" + encodeURIComponent(JSON.stringify(opts))
-                else
-                    cb = opts
-                    qs = ''
+                if not cb?
+                    if not opts?
+                        cb = query
+                        query = {}
+                    else
+                        cb = opts
+                    opts = {}
+                
+                qs = ("?query=" + encodeURIComponent(JSON.stringify(query)) +
+                    "&opts=" + encodeURIComponent(JSON.stringify(opts)))
 
                 processData = (data) ->
                     models = (_.extend(new InvisibleModel(), d) for d in data)
-                    cb(models)
+                    cb(null, models)
                 
                 http.request(
                         {path: "/invisible/#{@_modelName}/#{qs}", method: "GET"}, 
@@ -52,7 +57,7 @@ module.exports = (modelName, BaseModel) ->
                 update = (data) ->
                     _.extend(model, data)
                     if cb?
-                        cb(model)
+                        cb(null, model)
 
                 #FIXME handle errors
                 if @_id?
@@ -79,9 +84,8 @@ module.exports = (modelName, BaseModel) ->
                     
                     _cb = (err, res) ->
                         #TODO handle error
-                        console.log("deleted")
                         if cb?
-                            cb(model)
+                            cb(null, model)
 
                     http.request({path: "/invisible/#{@_modelName}/#{@_id}/", method: "DELETE"}, 
                         _cb).end()

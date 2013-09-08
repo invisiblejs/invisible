@@ -4,6 +4,8 @@ mongo = require('mongodb')
 
 class Person
     constructor: (@name) ->
+    getName: ()-> return @name
+
 
 db = undefined
 
@@ -14,7 +16,7 @@ before (done) ->
         db = database
         db.dropDatabase(done)
 
-describe 'Invisible.createModel()', () ->
+describe 'Server createModel()', () ->
     person = undefined
 
     before () ->
@@ -28,7 +30,7 @@ describe 'Invisible.createModel()', () ->
         assert(person.save?, "Has no save method")
         assert(person.delete?, "Has no delete method")
 
-describe 'InvisibleModel', () ->
+describe 'Server InvisibleModel', () ->
 
     martin = undefined
     facundo = undefined
@@ -94,14 +96,15 @@ describe 'InvisibleModel', () ->
             assert(martin._id)
             Invisible.Person.query (e, results)->
                 assert.equal(results.length, 2)
-                assert(facundo.name == results[0].name or facundo.name == results[1].name)
-                assert(martin.name == results[0].name or martin.name == results[1].name)
+                #use getName to assure its a model and not a plain object
+                assert(facundo.name == results[0].getName() or facundo.name == results[1].getName())
+                assert(martin.name == results[0].getName() or martin.name == results[1].getName())
                 done()
 
     it 'should apply filters on query', (done) ->
         Invisible.Person.query name: "Facundo", (e, results)->
             assert.equal(results.length, 1)
-            assert.equal(results[0].name, "Facundo")
+            assert.equal(results[0].getName(), "Facundo")
             assert.equal(facundo._id.toString(), results[0]._id.toString())
             done()
 

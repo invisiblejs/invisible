@@ -7,7 +7,6 @@ db = undefined
 
 mongo.connect uri, (err, database) ->
     throw err if err?
-    console.log("connected to #{uri}")
     db = database
 
 module.exports = (modelName, BaseModel)->
