@@ -31,6 +31,7 @@
     "grunt-cli": "~0.1.9",
     "grunt-mocha-test": "~0.6.3",
     "nock": "git://github.com/facundoolano/nock",
-    "supertest": "~0.7.1"
+    "supertest": "~0.7.1",
+    "express": "~3.4.0"
   }
 }
