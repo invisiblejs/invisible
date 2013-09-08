@@ -10,7 +10,6 @@ module.exports = (app) ->
 
 #rest controllers
 query = (req, res) -> 
-    #TODO error handling
     if req.query.query?
         criteria = JSON.parse(req.query.query)
     else
@@ -33,29 +32,30 @@ save = (req, res) ->
         res.send(200, instance)
 
 show = (req, res) ->
-    #TODO error handling
     Model = Invisible[req.params.modelName]
-    
-    Model.findById req.params.id, (e, result) ->
-        if result?
-            obj = JSON.parse(JSON.stringify(result))
-            res.send(200, obj)
-        else
-            res.send(404)
+    try
+        Model.findById req.params.id, (e, result) ->
+            if result?
+                obj = JSON.parse(JSON.stringify(result))
+                res.send(200, obj)
+            else
+                res.send(404)
+    catch e
+        res.send(500, e)
 
 update = (req, res) ->
     Model = Invisible[req.params.modelName]
     
-    Model.findById req.params.id, (error, instance) ->
-        try
+    try
+        Model.findById req.params.id, (error, instance) ->
             if instance?
                 _.extend(instance, req.body)
                 instance.save (e, instance) ->
                     res.send(200, instance)
             else
                 res.send(404)
-        catch e
-            res.send(500, e)
+    catch e
+        res.send(500, e)
 
 remove = (req, res) ->
     Model = Invisible[req.params.modelName]

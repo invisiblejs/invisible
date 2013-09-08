@@ -9,19 +9,18 @@ app = express()
 app.use express.bodyParser()
 require('../../lib/routes')(app)
 
-db = undefined
-before (done) ->
-    global.invisibledb = 'mongodb://127.0.0.1:27017/invisible-test'
-    
-    mongo.connect global.invisibledb, (err, database) ->
-        db = database
-        db.dropDatabase(done)
 
 describe 'REST routes', () ->
 
     person_id = undefined
 
-    before () ->
+    before (done) ->
+        global.invisibledb = 'mongodb://127.0.0.1:27017/invisible-test'
+    
+        mongo.connect global.invisibledb, (err, database) ->
+            db = database
+            db.dropDatabase(done)
+
         class Person
             constructor: (@name) ->
             getName: ()-> return @name
@@ -51,7 +50,6 @@ describe 'REST routes', () ->
             assert.equal(res.body.name, "Martin")
             done()
 
-
     it 'should return instance on GET id', (done) ->
         request(app)
         .get('/invisible/Person/' + person_id)
@@ -70,7 +68,6 @@ describe 'REST routes', () ->
             assert.equal(res.statusCode, 404)
             done()
 
-    #FIXME mongo outputs to console
     #FIXME check that client uses status codes to identify errors and not just http err
     it 'should return error on GET invalid id', (done) ->
         request(app)
@@ -79,11 +76,45 @@ describe 'REST routes', () ->
             assert.equal(res.statusCode, 500)
             done()
 
-    it 'should remove instance on DELETE', (done) ->
-        done()
-
     it 'should return list of instances on GET list', (done) ->
-        done()
+        request(app)
+        .get('/invisible/Person/')
+        .end (err, res) ->
+            assert.equal(res.statusCode, 200)
+            assert not err
+            assert.equal(res.body.length, 1)
+            assert.equal(res.body[0].name, "Martin")
+            done()
 
     it 'should correctly parse query criteria an opts in GET list', (done) ->
-        done()
+        request(app)
+        .get('/invisible/Person/')
+        .query(query: JSON.stringify(name: "Martin"))
+        .end (err, res) ->
+            assert.equal(res.statusCode, 200)
+            assert not err
+            assert.equal(res.body.length, 1)
+            assert.equal(res.body[0].name, "Martin")
+            done()
+
+    it 'should correctly parse query criteria an opts in GET list', (done) ->
+        request(app)
+        .get('/invisible/Person/')
+        .query(opts: JSON.stringify(limit: 1))
+        .end (err, res) ->
+            assert.equal(res.statusCode, 200)
+            assert not err
+            assert.equal(res.body.length, 1)
+            assert.equal(res.body[0].name, "Martin")
+            done()
+
+    it 'should remove instance on DELETE', (done) ->
+        request(app)
+        .del('/invisible/Person/' + person_id)
+        .end (err, res) ->
+            assert.equal(res.statusCode, 200)
+            request(app)
+            .get('/invisible/Person/' + person_id)
+            .end (err, res) ->
+                assert.equal(res.statusCode, 404)
+                done()
