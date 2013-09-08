@@ -86,13 +86,25 @@ describe 'Client InvisibleModel', () ->
             assert findreq.isDone()
             done()
 
-    it 'should raise an error when finding by an invalid id', ()->
-        #TODO pronto
-        assert(true)
+    it 'should raise an error when finding by an invalid id', (done)->
+        invalidreq = nock('http://localhost:80')
+        .get('/invisible/Person/invalidid/')
+        .reply(500)
+        
+        Invisible.Person.findById 'invalidid', (e, model) ->
+            assert e
+            assert invalidreq.isDone()
+            done()
 
-    it 'should raise an error when finding by an unexistent id', ()->
-        #TODO pronto
-        assert(true)
+    it 'should raise an error when finding by an unexistent id', (done)->
+        missingreq = nock('http://localhost:80')
+        .get('/invisible/Person/missingid/')
+        .reply(404)
+        
+        Invisible.Person.findById 'missingid', (e, model) ->
+            assert e
+            assert missingreq.isDone()
+            done()
 
     it 'should send a GET to the resource when finding and return a list of instances', (done)->
         queryreq = nock('http://localhost:80')

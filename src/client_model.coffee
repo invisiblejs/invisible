@@ -10,8 +10,11 @@ handleResponse = (cb) ->
         res.on 'data', (chunk) -> 
             fullBody += chunk
         res.on 'end', () ->
+            if res.statusCode != 200
+                return cb(new Error("Bad request"))
+
             data = JSON.parse(fullBody)
-            cb(data)
+            cb(null, data)
 
 
 module.exports = (modelName, BaseModel) ->
@@ -19,9 +22,10 @@ module.exports = (modelName, BaseModel) ->
             _modelName: modelName
             @_modelName: modelName #FIXME ugly
             
-            #FIXME handle errors
             @findById: (id, cb) -> 
-                processData = (data) ->
+                processData = (err, data) ->
+                    if err
+                        return cb(err)
                     model = _.extend(new InvisibleModel(), data)
                     cb(null, model)
 
@@ -29,7 +33,6 @@ module.exports = (modelName, BaseModel) ->
                         {path: "/invisible/#{@_modelName}/#{id}/", method: "GET"}, 
                         handleResponse(processData)).end()
 
-            #FIXME add query
             @query: (query, opts, cb) -> 
                 #handle optional arg
                 if not cb?
@@ -43,7 +46,9 @@ module.exports = (modelName, BaseModel) ->
                 qs = ("?query=" + encodeURIComponent(JSON.stringify(query)) +
                     "&opts=" + encodeURIComponent(JSON.stringify(opts)))
 
-                processData = (data) ->
+                processData = (err, data) ->
+                    if err
+                        return cb(err)
                     models = (_.extend(new InvisibleModel(), d) for d in data)
                     cb(null, models)
                 
@@ -54,19 +59,20 @@ module.exports = (modelName, BaseModel) ->
             save: (cb) -> 
                 model = this
                 
-                update = (data) ->
+                update = (err, data) ->
+                    if err and cb
+                        return cb(err)
+                    
                     _.extend(model, data)
                     if cb?
                         cb(null, model)
 
-                #FIXME handle errors
                 if @_id?
                     req = http.request(
                         {path: "/invisible/#{@_modelName}/#{@_id}/", method: "PUT",
                         headers: { 'content-type': "application/json" }}, 
                         handleResponse(update))
                 
-                #FIXME handle errors
                 else
                     req = http.request(
                         {path: "/invisible/#{@_modelName}/", method: "POST", 
@@ -77,14 +83,15 @@ module.exports = (modelName, BaseModel) ->
                 req.end()
                 return
             
-            #FIXME handle errors
             delete: (cb)-> 
                 if @_id?
                     model = this
                     
                     _cb = (err, res) ->
-                        #TODO handle error
-                        if cb?
+                        if cb
+                            if err
+                                return cb(err)
+
                             cb(null, model)
 
                     http.request({path: "/invisible/#{@_modelName}/#{@_id}/", method: "DELETE"}, 
