@@ -10,8 +10,11 @@ handleResponse = (cb) ->
         res.on 'data', (chunk) -> 
             fullBody += chunk
         res.on 'end', () ->
+            if res.statusCode != 200
+                return cb(new Error("Bad request"))
+
             data = JSON.parse(fullBody)
-            cb(data)
+            cb(null, data)
 
 
 module.exports = (modelName, BaseModel) ->
@@ -20,25 +23,34 @@ module.exports = (modelName, BaseModel) ->
             @_modelName: modelName #FIXME ugly
             
             @findById: (id, cb) -> 
-                processData = (data) ->
+                processData = (err, data) ->
+                    if err
+                        return cb(err)
                     model = _.extend(new InvisibleModel(), data)
-                    cb(model)
+                    cb(null, model)
 
                 http.request(
-                        {path: "/invisible/#{@_modelName}/#{id}", method: "GET"}, 
+                        {path: "/invisible/#{@_modelName}/#{id}/", method: "GET"}, 
                         handleResponse(processData)).end()
 
-            @query: (opts, cb) -> 
+            @query: (query, opts, cb) -> 
                 #handle optional arg
-                if cb?
-                    qs = "?query=" + encodeURIComponent(JSON.stringify(opts))
-                else
-                    cb = opts
-                    qs = ''
+                if not cb?
+                    if not opts?
+                        cb = query
+                        query = {}
+                    else
+                        cb = opts
+                    opts = {}
+                
+                qs = ("?query=" + encodeURIComponent(JSON.stringify(query)) +
+                    "&opts=" + encodeURIComponent(JSON.stringify(opts)))
 
-                processData = (data) ->
+                processData = (err, data) ->
+                    if err
+                        return cb(err)
                     models = (_.extend(new InvisibleModel(), d) for d in data)
-                    cb(models)
+                    cb(null, models)
                 
                 http.request(
                         {path: "/invisible/#{@_modelName}/#{qs}", method: "GET"}, 
@@ -47,16 +59,20 @@ module.exports = (modelName, BaseModel) ->
             save: (cb) -> 
                 model = this
                 
-                update = (data) ->
+                update = (err, data) ->
+                    if err and cb
+                        return cb(err)
+                    
                     _.extend(model, data)
                     if cb?
-                        cb(model)
+                        cb(null, model)
 
                 if @_id?
                     req = http.request(
                         {path: "/invisible/#{@_modelName}/#{@_id}/", method: "PUT",
                         headers: { 'content-type': "application/json" }}, 
                         handleResponse(update))
+                
                 else
                     req = http.request(
                         {path: "/invisible/#{@_modelName}/", method: "POST", 
@@ -72,10 +88,11 @@ module.exports = (modelName, BaseModel) ->
                     model = this
                     
                     _cb = (err, res) ->
-                        #TODO handle error
-                        console.log("deleted")
-                        if cb?
-                            cb(model)
+                        if cb
+                            if err
+                                return cb(err)
+
+                            cb(null, model)
 
                     http.request({path: "/invisible/#{@_modelName}/#{@_id}/", method: "DELETE"}, 
                         _cb).end()

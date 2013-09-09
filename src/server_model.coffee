@@ -7,7 +7,6 @@ db = undefined
 
 mongo.connect uri, (err, database) ->
     throw err if err?
-    console.log("connected to #{uri}")
     db = database
 
 module.exports = (modelName, BaseModel)->
@@ -19,30 +18,43 @@ module.exports = (modelName, BaseModel)->
             @findById: (id, cb) ->
                 col = db.collection(@_modelName) 
                 col.findOne {_id: new ObjectID(id)}, (err, result) ->
-                    console.log(err) if err or not result?
-                    
-                    #FIXME should'nt do this if no result
+                    if err?
+                        return cb(err)
+                    if not result?
+                        return cb(new Error("Inexistent id"))
+
                     model = _.extend(new InvisibleModel(), result)
-                    cb(model)
+                    cb(null, model)
             
-            @query: (opts, cb) ->
+            @query: (query, opts, cb) ->
                 col = db.collection(@_modelName)
                 if not cb?
-                    cb = opts
+                    if not opts?
+                        cb = query
+                        query = {}
+                    else
+                        cb = opts
                     opts = {}
                     
-                col.find(opts).toArray (err, results) ->
-                    console.log(err) if err or not result?
+                col.find(query, {}, opts).toArray (err, results) ->
+                    if err
+                        return cb(err)
+
                     models = (_.extend(new InvisibleModel(), r) for r in results)
-                    cb(models)   
+                    cb(null, models)
 
             save: (cb) -> 
                 model = this
                 update = (err, result) ->
-                    console.log(err) if err or not result?
+                    if err?
+                        return cb(err)
+                    if not result?
+                        return cb(new Error("No result when saving"))
+
                     model = _.extend(model, result)
                     if cb?
-                        cb(model)
+                        return cb(null, model)
+
                 col = db.collection(@_modelName)
                 data = JSON.parse JSON.stringify this
                 if data._id?
@@ -53,8 +65,12 @@ module.exports = (modelName, BaseModel)->
                 model = this
                 col = db.collection(@_modelName)
                 col.remove {_id: @_id}, (err, result) ->
-                    console.log(err) if err or not result?
                     if cb?
-                        cb(result)
+                        if err?
+                            return cb(err)
+                        if not result?
+                            return cb(new Error("No result when saving"))
+
+                        return cb(null, result)
 
     return InvisibleModel
