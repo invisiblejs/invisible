@@ -52,6 +52,13 @@ module.exports = (modelName, BaseModel, validations)->
 
             save: (cb) -> 
                 model = this
+
+                result = @validate()
+                if not result.valid
+                    err = new Error("ValidationError")
+                    err.errors = result.errors
+                    throw err
+                    
                 update = (err, result) ->
                     if err?
                         return cb(err)

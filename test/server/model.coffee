@@ -123,7 +123,10 @@ describe 'Server InvisibleModel', () ->
         assert(not result.valid)
         assert.equal(result.errors.length, 1)
 
-    it 'should not save an invalid instance', (done)->
-        done()
+    it 'should not save an invalid instance', ()->
+        person = new Invisible.Person(15)
+        assert.throws () -> 
+                person.save()
+            , Error
 
 # TODO should the user handle string ids, mongo ids or both?
