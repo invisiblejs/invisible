@@ -4,7 +4,7 @@ Invisible is a JavaScript (and CoffeeScript!) library that leverages
 [browserify](https://github.com/substack/node-browserify) to achieve the Holy Grail of web programming: 
 model reuse in the client and the server.
 
-## Usage
+## Installation and setup
 
 First wire up Invisible into your app:
 
@@ -16,6 +16,8 @@ invisible = require("invisible");
 app = express();
 invisible.server(app, path.join(__dirname, "models"))
 ```
+
+## Extending models
 
 To make your models available everywhere, define them and call `Invisible.createModel`
 
@@ -62,6 +64,7 @@ namespace:
 </script>
 ```
 
+## REST and MongoDB integration
 
 Invisible extends your models to handle your MongoDB persistence, no matter if you are at the client or 
 the server:
@@ -72,3 +75,6 @@ Invisible.Person.query({firstName: "Jane"}, function(results){
     console.log(results[0].fullName()); //Jane Doe
 });
 ```
+## Validations
+
+TODO
