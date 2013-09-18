@@ -1,5 +1,6 @@
 mongo = require('mongodb')
 _ = require("underscore")
+revalidator = require("revalidator")
 
 ObjectID = mongo.ObjectID
 uri = global.invisibledb or 'mongodb://127.0.0.1:27017/invisible'
@@ -12,8 +13,13 @@ mongo.connect uri, (err, database) ->
 module.exports = (modelName, BaseModel)->
 
     class InvisibleModel extends BaseModel
+            #TODO factor out repeated lines
             _modelName: modelName
-            @_modelName: modelName #FIXME ugly
+            @_modelName: modelName #FIXME 
+
+            validate: ()->
+                validations = @validations or {}
+                revalidator.validate(this, validations)
             
             @findById: (id, cb) ->
                 col = db.collection(@_modelName) 
@@ -45,6 +51,13 @@ module.exports = (modelName, BaseModel)->
 
             save: (cb) -> 
                 model = this
+
+                result = @validate()
+                if not result.valid
+                    err = new Error("ValidationError")
+                    err.errors = result.errors
+                    throw err
+
                 update = (err, result) ->
                     if err?
                         return cb(err)

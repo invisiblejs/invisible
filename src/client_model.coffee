@@ -1,5 +1,6 @@
 http = require("http")
 _ = require("underscore")
+revalidator = require("revalidator")
 
 handleResponse = (cb) ->
     ###
@@ -19,9 +20,14 @@ handleResponse = (cb) ->
 
 module.exports = (modelName, BaseModel) ->
     class InvisibleModel extends BaseModel
+            #TODO factor out repeated lines
             _modelName: modelName
             @_modelName: modelName #FIXME ugly
             
+            validate: ()->
+                validations = @validations or {}
+                revalidator.validate(this, validations)
+
             @findById: (id, cb) -> 
                 processData = (err, data) ->
                     if err
@@ -58,6 +64,12 @@ module.exports = (modelName, BaseModel) ->
 
             save: (cb) -> 
                 model = this
+
+                result = @validate()
+                if not result.valid
+                    err = new Error("ValidationError")
+                    err.errors = result.errors
+                    throw err
                 
                 update = (err, data) ->
                     if err and cb

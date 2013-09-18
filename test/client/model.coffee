@@ -5,6 +5,8 @@ nock = require('nock')
 class Person
     constructor: (@name) ->
     getName: ()-> return @name
+    validations: 
+        properties: name: type: 'string'
 
 describe 'Client createModel()', () ->
     person = undefined
@@ -137,3 +139,19 @@ describe 'Client InvisibleModel', () ->
             assert queryreq.isDone()
             done()
 
+    it 'should return a validation error when invalid', ()->
+        person = new Invisible.Person("Luis")
+        result = person.validate()
+        assert(result.valid)
+        assert.equal(result.errors.length, 0)
+        
+        person.name = 15 #invalid
+        result = person.validate()
+        assert(not result.valid)
+        assert.equal(result.errors.length, 1)
+
+    it 'should not save an invalid instance', ()->
+        person = new Invisible.Person(15)
+        assert.throws () -> 
+                person.save()
+            , Error
