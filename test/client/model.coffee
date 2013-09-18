@@ -34,7 +34,7 @@ describe 'Client InvisibleModel', () ->
         #mocking client
         Invisible.isClient = () -> return true
 
-        Invisible.createModel('Person', Person)
+        Invisible.createModel('Person', Person, properties: name: type: 'string')
         person = new Invisible.Person("Martin")
 
     after () ->
@@ -137,3 +137,16 @@ describe 'Client InvisibleModel', () ->
             assert queryreq.isDone()
             done()
 
+    it 'should return a validation error when invalid', ()->
+        person = new Invisible.Person("Luis")
+        result = person.validate()
+        assert(result.valid)
+        assert.equal(result.errors.length, 0)
+        
+        person.name = 15 #invalid
+        result = person.validate()
+        assert(not result.valid)
+        assert.equal(result.errors.length, 1)
+
+    it 'should not save an invalid instance', (done)->
+        done()
