@@ -5,7 +5,8 @@ mongo = require('mongodb')
 class Person
     constructor: (@name) ->
     getName: ()-> return @name
-
+    validations: 
+        properties: name: type: 'string'
 
 db = undefined
 before (done) ->
@@ -35,7 +36,7 @@ describe 'Server InvisibleModel', () ->
     facundo = undefined
 
     before () ->
-        Invisible.createModel('Person', Person, properties: name: type: 'string')
+        Invisible.createModel('Person', Person)
         martin = new Invisible.Person('Martin')
         facundo = new Invisible.Person('Facundo')
         

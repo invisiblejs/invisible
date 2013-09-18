@@ -5,6 +5,8 @@ nock = require('nock')
 class Person
     constructor: (@name) ->
     getName: ()-> return @name
+    validations: 
+        properties: name: type: 'string'
 
 describe 'Client createModel()', () ->
     person = undefined
@@ -34,7 +36,7 @@ describe 'Client InvisibleModel', () ->
         #mocking client
         Invisible.isClient = () -> return true
 
-        Invisible.createModel('Person', Person, properties: name: type: 'string')
+        Invisible.createModel('Person', Person)
         person = new Invisible.Person("Martin")
 
     after () ->

@@ -18,9 +18,11 @@ module.exports = (modelName, BaseModel, validations)->
             @_modelName: modelName #FIXME 
 
             _validations: validations
+            @_validations: validations
 
             validate: ()->
-                revalidator.validate(this, @_validations)
+                validations = @validations or {}
+                revalidator.validate(this, validations)
             
             @findById: (id, cb) ->
                 col = db.collection(@_modelName) 
@@ -58,7 +60,7 @@ module.exports = (modelName, BaseModel, validations)->
                     err = new Error("ValidationError")
                     err.errors = result.errors
                     throw err
-                    
+
                 update = (err, result) ->
                     if err?
                         return cb(err)

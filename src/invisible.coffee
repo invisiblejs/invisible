@@ -3,14 +3,12 @@ module.exports = Invisible = {}
 
 Invisible.isClient = () -> window?
 
-Invisible.createModel = (modelName, Model, validations) ->
-    if not validations?
-        validations = {}
-
+Invisible.createModel = (modelName, Model) ->
+    
     if Invisible.isClient()
-        InvisibleModel = require('./client_model')(modelName, Model, validations)
+        InvisibleModel = require('./client_model')(modelName, Model)
     else
-        InvisibleModel = require('./server_model')(modelName, Model, validations)
+        InvisibleModel = require('./server_model')(modelName, Model)
 
     this[modelName] = InvisibleModel
     return InvisibleModel
