@@ -10,15 +10,12 @@ mongo.connect uri, (err, database) ->
     throw err if err?
     db = database
 
-module.exports = (modelName, BaseModel, validations)->
+module.exports = (modelName, BaseModel)->
 
     class InvisibleModel extends BaseModel
             #TODO factor out repeated lines
             _modelName: modelName
             @_modelName: modelName #FIXME 
-
-            _validations: validations
-            @_validations: validations
 
             validate: ()->
                 validations = @validations or {}

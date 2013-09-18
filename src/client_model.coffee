@@ -18,15 +18,12 @@ handleResponse = (cb) ->
             cb(null, data)
 
 
-module.exports = (modelName, BaseModel, validations) ->
+module.exports = (modelName, BaseModel) ->
     class InvisibleModel extends BaseModel
             #TODO factor out repeated lines
             _modelName: modelName
             @_modelName: modelName #FIXME ugly
             
-            _validations: validations
-            @_validations: validations
-
             validate: ()->
                 validations = @validations or {}
                 revalidator.validate(this, validations)
