@@ -108,6 +108,24 @@ describe 'Server InvisibleModel', () ->
             assert.equal(facundo._id.toString(), results[0]._id.toString())
             done()
 
+    it 'should allow querying by _id string', (done) ->
+        facundo_id = facundo._id.toString()
+        martin_id = martin._id.toString()
+        
+        Invisible.Person.query _id: facundo_id, (e, results)->
+            assert.equal(results.length, 1)
+            assert.equal(results[0].getName(), "Facundo")
+
+            Invisible.Person.query _id: $in: [facundo_id], (e, results)->
+                assert.equal(results.length, 1)
+                assert.equal(results[0].getName(), "Facundo")
+
+                Invisible.Person.query _id: $nin: [martin_id], (e, results)->
+                    assert.equal(results.length, 1)
+                    assert.equal(results[0].getName(), "Facundo")
+
+                    done()        
+
     it 'should apply query options', (done) ->
         Invisible.Person.query {}, limit: 1, (e, results)->
             assert.equal(results.length, 1)
