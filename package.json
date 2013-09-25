@@ -1,6 +1,6 @@
 {
   "name": "invisible",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "DRY models for client and server",
   "main": "index.js",
   "scripts": {
