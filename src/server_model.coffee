@@ -70,11 +70,16 @@ module.exports = (InvisibleModel)->
                 return cb(new Error("No result when saving"))
 
             model = _.extend(model, result)
+            if isNew
+                InvisibleModel.serverSocket.emit('new', model)
+            else
+                InvisibleModel.serverSocket.emit('update', model)
             if cb?
                 return cb(null, model)
 
         col = db.collection(@_modelName)
         data = JSON.parse JSON.stringify this
+        isNew = !(data._id?)
         if data._id?
             data._id = new ObjectID(data._id)
         col.save data, update
@@ -89,6 +94,7 @@ module.exports = (InvisibleModel)->
                 if not result?
                     return cb(new Error("No result when saving"))
 
+                InvisibleModel.serverSocket.emit('delete', model)
                 return cb(null, result)
 
     return InvisibleModel
