@@ -2,11 +2,11 @@ _ = require("underscore")
 Invisible = require('./invisible')
 
 module.exports = (app) ->
-	app.get("/invisible/:modelName", query)
-	app.post("/invisible/:modelName", save)
-	app.get("/invisible/:modelName/:id", show)
-	app.put("/invisible/:modelName/:id", update)
-	app.delete("/invisible/:modelName/:id", remove)
+    app.get("/invisible/:modelName", query)
+    app.post("/invisible/:modelName", save)
+    app.get("/invisible/:modelName/:id", show)
+    app.put("/invisible/:modelName/:id", update)
+    app.delete("/invisible/:modelName/:id", remove)
 
 #rest controllers
 query = (req, res) -> 
