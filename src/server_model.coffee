@@ -9,6 +9,19 @@ mongo.connect uri, (err, database) ->
     throw err if err?
     db = database
 
+cleanQuery = (query) ->
+    #Patches the query in case it refers to _id as a string
+    if query._id
+        if typeof query._id == 'string'
+            query._id = ObjectID(query._id)
+        else if typeof query._id == 'object'
+            if query._id.$in
+                query._id.$in = (ObjectID(id) for id in query._id.$in when typeof id == 'string')
+            if query._id.$nin
+                query._id.$nin = (ObjectID(id) for id in query._id.$nin when typeof id == 'string')
+
+
+
 module.exports = (InvisibleModel)->
 
     InvisibleModel.findById = (id, cb) ->
@@ -23,7 +36,6 @@ module.exports = (InvisibleModel)->
             cb(null, model)
 
     InvisibleModel.query = (query, opts, cb) ->
-        
         col = db.collection(@_modelName)
         if not cb?
             if not opts?
@@ -32,7 +44,9 @@ module.exports = (InvisibleModel)->
             else
                 cb = opts
             opts = {}
-            
+        
+        cleanQuery(query)
+
         col.find(query, {}, opts).toArray (err, results) ->
             if err
                 return cb(err)
