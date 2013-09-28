@@ -1,4 +1,3 @@
-revalidator = require("revalidator")
 io_client = require('socket.io-client')
 _ = require("underscore")
 module.exports = Invisible = {}
@@ -8,14 +7,8 @@ Invisible.isClient = () -> window?
 Invisible.createModel = (modelName, Model) ->
 
     class InvisibleModel extends Model
-        _modelName: modelName
-        @_modelName: modelName #FIXME ugly
+        @modelName: modelName
         @socket = io_client.connect("http://localhost:3001/#{modelName}")
-
-        validate: ()->
-            validations = @validations or {}
-            revalidator.validate(this, validations)
-
 
     InvisibleModel.onNew = (cb) ->
         InvisibleModel.socket.on 'new', (data) ->
@@ -35,13 +28,15 @@ Invisible.createModel = (modelName, Model) ->
             _.extend(model, data)
             cb(model)
 
+    require('./model/common')(InvisibleModel)
+
     if Invisible.isClient()
-        require('./client_model')(InvisibleModel)
+        require('./model/client')(InvisibleModel)
     else
         InvisibleModel.serverSocket = io.of("/#{modelName}")
         InvisibleModel.serverSocket.on 'connection', (socket) ->
             return
-        require('./server_model')(InvisibleModel)
+        require('./model/server')(InvisibleModel)
 
     this[modelName] = InvisibleModel
     return InvisibleModel

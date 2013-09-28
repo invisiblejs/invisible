@@ -25,7 +25,7 @@ cleanQuery = (query) ->
 module.exports = (InvisibleModel)->
 
     InvisibleModel.findById = (id, cb) ->
-        col = db.collection(@_modelName) 
+        col = db.collection(InvisibleModel.modelName) 
         col.findOne {_id: new ObjectID(id)}, (err, result) ->
             if err?
                 return cb(err)
@@ -36,7 +36,7 @@ module.exports = (InvisibleModel)->
             cb(null, model)
 
     InvisibleModel.query = (query, opts, cb) ->
-        col = db.collection(@_modelName)
+        col = db.collection(InvisibleModel.modelName)
         if not cb?
             if not opts?
                 cb = query
@@ -77,7 +77,7 @@ module.exports = (InvisibleModel)->
             if cb?
                 return cb(null, model)
 
-        col = db.collection(@_modelName)
+        col = db.collection(InvisibleModel.modelName)
         data = JSON.parse JSON.stringify this
         isNew = !(data._id?)
         if data._id?
@@ -86,7 +86,7 @@ module.exports = (InvisibleModel)->
 
     InvisibleModel::delete = (cb)-> 
         model = this
-        col = db.collection(@_modelName)
+        col = db.collection(InvisibleModel.modelName)
         col.remove {_id: @_id}, (err, result) ->
             if cb?
                 if err?

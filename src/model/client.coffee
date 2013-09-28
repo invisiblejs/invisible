@@ -27,7 +27,7 @@ module.exports = (InvisibleModel) ->
             cb(null, model)
 
         http.request(
-                {path: "/invisible/#{@_modelName}/#{id}/", method: "GET"}, 
+                {path: "/invisible/#{InvisibleModel.modelName}/#{id}/", method: "GET"}, 
                 handleResponse(processData)).end()
 
     InvisibleModel.query = (query, opts, cb) -> 
@@ -50,7 +50,7 @@ module.exports = (InvisibleModel) ->
             cb(null, models)
         
         http.request(
-                {path: "/invisible/#{@_modelName}/#{qs}", method: "GET"}, 
+                {path: "/invisible/#{InvisibleModel.modelName}/#{qs}", method: "GET"}, 
                 handleResponse(processData)).end()
 
     InvisibleModel::save = (cb) -> 
@@ -72,13 +72,13 @@ module.exports = (InvisibleModel) ->
 
         if @_id?
             req = http.request(
-                {path: "/invisible/#{@_modelName}/#{@_id}/", method: "PUT",
+                {path: "/invisible/#{InvisibleModel.modelName}/#{@_id}/", method: "PUT",
                 headers: { 'content-type': "application/json" }}, 
                 handleResponse(update))
         
         else
             req = http.request(
-                {path: "/invisible/#{@_modelName}/", method: "POST", 
+                {path: "/invisible/#{InvisibleModel.modelName}/", method: "POST", 
                 headers: { 'content-type': "application/json" }}, 
                 handleResponse(update))
         
@@ -97,7 +97,7 @@ module.exports = (InvisibleModel) ->
 
                     cb(null, model)
 
-            http.request({path: "/invisible/#{@_modelName}/#{@_id}/", method: "DELETE"}, 
+            http.request({path: "/invisible/#{InvisibleModel.modelName}/#{@_id}/", method: "DELETE"}, 
                 _cb).end()
         return
 
