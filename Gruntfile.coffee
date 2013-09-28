@@ -14,7 +14,7 @@ module.exports = (grunt) ->
                 options:
                     nospawn: false
                 files: ['src/{,**/}*.coffee', 'test/server/{,**/}*.coffee', 'test/client/{,**/}*.coffee']
-                tasks: ['mochaTest']
+                tasks: ['test']
         coffee:
             compile:
                 expand: true
