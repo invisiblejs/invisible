@@ -7,6 +7,11 @@ class Person
     getName: ()-> return @name
     validations: 
         properties: name: type: 'string'
+        methods: ['validateFoo', 'validateBar']
+    validateFoo: (cb) ->
+        cb(valid: true, errors:[])
+    validateBar: (cb) ->
+        cb(valid: true, errors:[])
 
 db = undefined
 before (done) ->

@@ -29,11 +29,10 @@ save = (req, res) ->
     instance = new Model()
     _.extend(instance, req.body)
     
-    try
-        instance.save (e, instance) ->
-            res.send(200, instance)
-    catch e
-        res.send(400, e)        
+    instance.save (e, instance) ->
+        if e
+            return res.send(400, e)            
+        res.send(200, instance) 
 
 show = (req, res) ->
     Model = Invisible[req.params.modelName]
@@ -50,19 +49,16 @@ show = (req, res) ->
 update = (req, res) ->
     Model = Invisible[req.params.modelName]
     
-    try
-        Model.findById req.params.id, (error, instance) ->
-            if instance?
-                _.extend(instance, req.body)
-                try
-                    instance.save (e, instance) ->
-                        res.send(200, instance)
-                catch e
-                    res.send(400, e)
-            else
-                res.send(404)
-    catch e
-        res.send(500, e)
+    Model.findById req.params.id, (error, instance) ->
+        if instance?
+            _.extend(instance, req.body)
+            instance.save (e, instance) ->
+                if e
+                    return res.send(400, e)
+                res.send(200, instance)
+                
+        else
+            res.send(404)
 
 remove = (req, res) ->
     Model = Invisible[req.params.modelName]
