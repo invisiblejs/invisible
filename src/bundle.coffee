@@ -11,6 +11,7 @@ module.exports = (rootFolder, opt) ->
     b.ignore('mongodb')
     b.ignore('./bundle')
     b.ignore('./routes')
+    b.ignore('socket.io')
 
     # walk through model files
     modelFiles = fs.readdirSync(rootFolder)
