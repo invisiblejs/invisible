@@ -7,11 +7,13 @@ class Person
     getName: ()-> return @name
     validations: 
         properties: name: type: 'string'
-        methods: ['validateFoo', 'validateBar']
-    validateFoo: (cb) ->
+        methods: ['validateValid1', 'validateValid2']
+    validateValid1: (cb) ->
         cb(valid: true, errors:[])
-    validateBar: (cb) ->
+    validateValid2: (cb) ->
         cb(valid: true, errors:[])
+    validateInvalid: (cb) ->
+        cb(valid: false, errors:['something failed'])
 
 db = undefined
 before (done) ->
@@ -146,6 +148,16 @@ describe 'Server InvisibleModel', () ->
             person.validate (result) ->
                 assert(not result.valid)
                 assert.equal(result.errors.length, 1)
+                done()
+
+    it 'should fail on custom validation methods when invalid', (done)->
+        person = new Invisible.Person("Luis")
+        person.validate (result) ->
+            assert(result.valid)
+            person.validations.methods = ['validateValid1', 'validateInvalid', 'validateValid2']
+            person.validate (result) ->
+                assert(not result.valid)
+                assert.deepEqual(result.errors, ['something failed'])
                 done()
 
     it 'should not save an invalid instance', (done)->
