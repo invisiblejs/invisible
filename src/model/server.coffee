@@ -57,32 +57,30 @@ module.exports = (InvisibleModel)->
     InvisibleModel::save = (cb) -> 
         model = this
 
-        result = @validate()
-        if not result.valid
-            err = new Error("ValidationError")
-            err.errors = result.errors
-            throw err
+        @validate (result) ->
+            if not result.valid
+                return cb(result.errors)
 
-        update = (err, result) ->
-            if err?
-                return cb(err)
-            if not result?
-                return cb(new Error("No result when saving"))
+            update = (err, result) ->
+                if err?
+                    return cb(err)
+                if not result?
+                    return cb(new Error("No result when saving"))
 
-            model = _.extend(model, result)
-            if isNew
-                InvisibleModel.serverSocket.emit('new', model)
-            else
-                InvisibleModel.serverSocket.emit('update', model)
-            if cb?
-                return cb(null, model)
+                model = _.extend(model, result)
+                if isNew
+                    InvisibleModel.serverSocket.emit('new', model)
+                else
+                    InvisibleModel.serverSocket.emit('update', model)
+                if cb?
+                    return cb(null, model)
 
-        col = db.collection(InvisibleModel.modelName)
-        data = JSON.parse JSON.stringify this
-        isNew = !(data._id?)
-        if data._id?
-            data._id = new ObjectID(data._id)
-        col.save data, update
+            col = db.collection(InvisibleModel.modelName)
+            data = JSON.parse JSON.stringify model
+            isNew = !(data._id?)
+            if data._id?
+                data._id = new ObjectID(data._id)
+            col.save data, update
 
     InvisibleModel::delete = (cb)-> 
         model = this

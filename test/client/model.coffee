@@ -139,19 +139,20 @@ describe 'Client InvisibleModel', () ->
             assert queryreq.isDone()
             done()
 
-    it 'should return a validation error when invalid', ()->
+    it 'should return a validation error when invalid', (done)->
         person = new Invisible.Person("Luis")
-        result = person.validate()
-        assert(result.valid)
-        assert.equal(result.errors.length, 0)
-        
-        person.name = 15 #invalid
-        result = person.validate()
-        assert(not result.valid)
-        assert.equal(result.errors.length, 1)
+        person.validate (result) ->
+            assert(result.valid)
+            assert.equal(result.errors.length, 0)
+            
+            person.name = 15 #invalid
+            person.validate (result) ->
+                assert(not result.valid)
+                assert.equal(result.errors.length, 1)
+                done()
 
-    it 'should not save an invalid instance', ()->
+    it 'should not save an invalid instance', (done)->
         person = new Invisible.Person(15)
-        assert.throws () -> 
-                person.save()
-            , Error
+        person.save (err, result)->
+            assert(err)
+            done()
