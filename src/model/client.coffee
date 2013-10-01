@@ -56,12 +56,6 @@ module.exports = (InvisibleModel) ->
     InvisibleModel::save = (cb) -> 
         model = this
 
-        result = @validate()
-        if not result.valid
-            err = new Error("ValidationError")
-            err.errors = result.errors
-            throw err
-        
         update = (err, data) ->
             if err and cb
                 return cb(err)
@@ -69,22 +63,25 @@ module.exports = (InvisibleModel) ->
             _.extend(model, data)
             if cb?
                 cb(null, model)
+        
+        @validate (result) ->
+            if not result.valid
+                return cb(result.errors)
 
-        if @_id?
-            req = http.request(
-                {path: "/invisible/#{InvisibleModel.modelName}/#{@_id}/", method: "PUT",
-                headers: { 'content-type': "application/json" }}, 
-                handleResponse(update))
-        
-        else
-            req = http.request(
-                {path: "/invisible/#{InvisibleModel.modelName}/", method: "POST", 
-                headers: { 'content-type': "application/json" }}, 
-                handleResponse(update))
-        
-        req.write(JSON.stringify(this))
-        req.end()
-        return
+            if model._id?
+                req = http.request(
+                    {path: "/invisible/#{InvisibleModel.modelName}/#{model._id}/", method: "PUT",
+                    headers: { 'content-type': "application/json" }}, 
+                    handleResponse(update))
+            
+            else
+                req = http.request(
+                    {path: "/invisible/#{InvisibleModel.modelName}/", method: "POST", 
+                    headers: { 'content-type': "application/json" }}, 
+                    handleResponse(update))
+            
+            req.write(JSON.stringify(model))
+            req.end()
     
     InvisibleModel::delete = (cb)-> 
         if @_id?
