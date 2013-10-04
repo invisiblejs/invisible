@@ -221,4 +221,19 @@ properties validations succeed, and stop the validation process upon the first f
 
 ## Real time events
 
-TODO: explain socket.io integration and avaiable methods
+Invisible.js uses [socket.io](http://socket.io/) to emmit an event whenever something changes for a model, and lets you add listener 
+functions to react to those changes in realtime.
+
+```javascript
+Invisible.Person.onNew(function(model){
+    console.log(model.fullName() + " has been created");
+});
+
+Invisible.Person.onUpdate(function(model){
+    console.log(model.fullName() + " has been updated");
+});
+
+Invisible.Person.onDelete(function(model){
+    console.log(model.fullName() + " has been deleted");
+});
+```
