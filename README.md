@@ -165,9 +165,59 @@ a string id instead of an ObjectID instance.
 
 ## Validations
 
-TODO: explain revalidator integration
+Invisible.js integrates with [revalidator](https://github.com/flatiron/revalidator) to handle model validations. 
+A `validate` method is added to each model which looks for a defined validation schema, and is executed each time 
+a model is saved, both in the client and the server. For example:
 
-TODO: explain custom validation metthods
+```javascript
+function Person(email){
+    this.email = email;
+}
+
+Person.prototype.validations = {
+    properties: {
+        email: {
+            format: 'email',
+            required: true
+        }
+    }
+}
+
+john = new Person("john.doe@none.com");
+john.save(function(err, result){
+    console.log("All OK here.");
+});
+
+john.email = "invalid";
+john.save(function(err, result){
+    console.log(err); 
+    /* Prints: {valid: false, errors: [{attribute: 'format', 
+        property: 'email', message: 'is not a valid email'}]} */
+})
+```
+
+Invisible.js also introduces "method" validations, which allow you to specify a method which should be called
+in the validation process. This way asynchronic validations, such as querying the database, can be performed:
+
+```javascript
+Person.prototype.validations = {
+    methods: ['checkUnique']
+}
+
+Person.prototype.checkUnique = function(cb) {
+    Invisible.Person.query({email: this.email}, function(err, res){
+        if (res.length > 0){
+            cb({valid: false, errors: ["email already registered"]});
+        } else {
+            cb({valid: true, errors: []});
+        }
+    });
+}
+```
+
+The custom validation method takes a callback and should call it with the return format of revalidator: an object
+with a "valid" boolean field and an "errors" list. Note that the method validations are only called if the 
+properties validations succeed, and stop the validation process upon the first failure.
 
 ## Real time events
 
