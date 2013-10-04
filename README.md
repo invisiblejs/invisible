@@ -11,7 +11,7 @@ Install with npm:
 npm install invisible
 ```
 
-Wire up Invisible into your express app:
+Wire up Invisible into your [express](http://expressjs.com/) app:
 ```javascript
 express = require("express");
 path = require("path");
@@ -78,17 +78,91 @@ In addition to making your models available everywhere, Invisible extends them w
 persistence. In the server this means interacting with MongoDB and in the client making requests to an
 auto-generated REST API, that subsequently performs the same DB action.
 
-TODO: describe all methods
-
-TODO: better examples
+### Save
 ```javascript
-jane.save();
-Invisible.Person.query({firstName: "Jane"}, function(results){
-    console.log(results[0].fullName()); //Jane Doe
+jane.save(function(err, result){
+    if (err){
+        console.log("something went wrong");
+    } else {
+        console.log("Jane's id is " + jane._id);
+        console.log("which equals " + result._id);
+    }
+})
+```
+The first time the save method is called, it creates the model in the database and sets its `_id` attribute. 
+Subsequent calls update the model. Validations are called upon saving, see the validations section for details.
+
+Note that a full Invisible model instance is passed to the callback, and the calling instance is also updated
+when the process is done.
+
+### Delete
+```javascript
+jane.delete(function(err, result){
+    if (err){
+        console.log("something went wrong");
+    } else {
+        console.log("Jane is no more.");
+    }
+})
+```
+### Query
+
+```javascript
+Invisible.Person.query(function(err, results){
+    if (err){
+        console.log("something went wrong");
+    } else {
+        console.log("Saved persons are:");
+        for (var i = 0; i < results.length; i++){
+            console.log(results[i].fullName());
+        }
+    }
 });
 
-#TODO explain query syntax (link to mongo driver). Mention id treatment
+Invisible.Person.query({firstName: "Jane"}, function(err, results){
+    if (err){
+        console.log("something went wrong");
+    } else {
+        console.log("Persons named Jane are:");
+        for (var i = 0; i < results.length; i++){
+            console.log(results[i].fullName());
+        }
+    }
+});
+
+Invisible.Person.query({}, {sort: "lastName", limit: 10}, function(err, results){
+    if (err){
+        console.log("something went wrong");
+    } else {
+        console.log("First 10 persons are:");
+        for (var i = 0; i < results.length; i++){
+            console.log(results[i].fullName());
+        }
+    }
+});
 ```
+
+Queries the database for existent models. The first two optional arguments correspond to the 
+[Query object](http://mongodb.github.io/node-mongodb-native/markdown-docs/queries.html#query-object) 
+and [Query options](http://mongodb.github.io/node-mongodb-native/markdown-docs/queries.html#query-options) 
+in the MongoDB Node.JS driver. The one difference is that when using ids you can pass strings, 
+that will be converted to ObjectID when necessary. 
+
+### Find by id
+```javascript
+Invisible.Person.findById(jane._id, function(err, model){
+    if (err){
+        console.log("something went wrong");
+    } else {
+        console.log("Jane's name is " + model.firstName);
+        console.log("But we knew that!");
+    }
+})
+```
+
+Looks into the database for a model with the specified `_id` value. As in the query method, you can pass
+a string id instead of an ObjectID instance.
+
 ## Validations
 
 TODO: explain revalidator integration
