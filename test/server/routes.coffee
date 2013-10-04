@@ -117,3 +117,20 @@ describe 'REST routes', () ->
             .end (err, res) ->
                 assert.equal(res.statusCode, 404)
                 done()
+
+    it 'should send an error when saving an invalid instance', (done) ->
+        class FailingPerson
+            constructor: (@name) ->
+            getName: ()-> return @name
+            validations: methods: ['failingMethod']
+            failingMethod: (cb)->
+                cb(valid: false, errors: ['it fails'])
+
+        Invisible.createModel('FailingPerson', FailingPerson)
+
+        request(app)
+        .post('/invisible/FailingPerson/')
+        .send({name: "Facundo"})
+        .end (err, res) ->
+            assert.equal(res.statusCode, 400)
+            done()

@@ -7,6 +7,13 @@ class Person
     getName: ()-> return @name
     validations: 
         properties: name: type: 'string'
+        methods: ['validateValid1', 'validateValid2']
+    validateValid1: (cb) ->
+        cb(valid: true, errors:[])
+    validateValid2: (cb) ->
+        cb(valid: true, errors:[])
+    validateInvalid: (cb) ->
+        cb(valid: false, errors:['something failed'])
 
 db = undefined
 before (done) ->
@@ -108,26 +115,56 @@ describe 'Server InvisibleModel', () ->
             assert.equal(facundo._id.toString(), results[0]._id.toString())
             done()
 
+    it 'should allow querying by _id string', (done) ->
+        facundo_id = facundo._id.toString()
+        martin_id = martin._id.toString()
+        
+        Invisible.Person.query _id: facundo_id, (e, results)->
+            assert.equal(results.length, 1)
+            assert.equal(results[0].getName(), "Facundo")
+
+            Invisible.Person.query _id: $in: [facundo_id], (e, results)->
+                assert.equal(results.length, 1)
+                assert.equal(results[0].getName(), "Facundo")
+
+                Invisible.Person.query _id: $nin: [martin_id], (e, results)->
+                    assert.equal(results.length, 1)
+                    assert.equal(results[0].getName(), "Facundo")
+
+                    done()        
+
     it 'should apply query options', (done) ->
         Invisible.Person.query {}, limit: 1, (e, results)->
             assert.equal(results.length, 1)
             done()
 
-    it 'should return a validation error when invalid', ()->
+    it 'should return a validation error when invalid', (done)->
         person = new Invisible.Person("Luis")
-        result = person.validate()
-        assert(result.valid)
-        assert.equal(result.errors.length, 0)
-        
-        person.name = 15 #invalid
-        result = person.validate()
-        assert(not result.valid)
-        assert.equal(result.errors.length, 1)
+        person.validate (result) ->
+            assert(result.valid)
+            assert.equal(result.errors.length, 0)
+            
+            person.name = 15 #invalid
+            person.validate (result) ->
+                assert(not result.valid)
+                assert.equal(result.errors.length, 1)
+                done()
 
-    it 'should not save an invalid instance', ()->
+    it 'should fail on custom validation methods when invalid', (done)->
+        person = new Invisible.Person("Luis")
+        person.validate (result) ->
+            assert(result.valid)
+            person.validations.methods = ['validateValid1', 'validateInvalid', 'validateValid2']
+            person.validate (result) ->
+                assert(not result.valid)
+                assert.deepEqual(result.errors, ['something failed'])
+                done()
+
+    it 'should not save an invalid instance', (done)->
         person = new Invisible.Person(15)
-        assert.throws () -> 
-                person.save()
-            , Error
+        person.save (err, result)->
+            assert(err)
+            done()
+        
 
 # TODO should the user handle string ids, mongo ids or both?
