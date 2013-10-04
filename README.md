@@ -49,16 +49,15 @@ Person.prototype.getAvatarUrl = function(){
 module.exports = Invisible.createModel("Person", Person);
 ```
 
-Require your models as usual in the server:
+Now your models will be available under the Invisible namespace. Require as usual in the server:
 
 ```javascript
-Person = require("./models/person");
-john = new Person("John", "Doe", "john.doe@mail.com");
+Invisible = require("invisible")
+john = new Invisible.Person("John", "Doe", "john.doe@mail.com");
 john.fullName(); //John Doe
 ```
 
-In the client, just add the invisible script and your models will be available under the Invisible 
-namespace:
+In the client, just add the invisible script:
 
 ```html
 <script src="invisible.js"></script>
