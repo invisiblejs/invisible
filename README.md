@@ -6,8 +6,12 @@ model reuse in the client and the server.
 
 ## Installation and setup
 
-First wire up Invisible into your app:
+Install with npm:
+```
+npm install invisible
+```
 
+Wire up Invisible into your express app:
 ```javascript
 express = require("express");
 path = require("path");
@@ -64,17 +68,33 @@ namespace:
 </script>
 ```
 
+Invisible.js uses [browserify](https://github.com/substack/node-browserify) to expose you server defined 
+models in the browser, so you can use any broserify-able library to implement them. Note that this
+integration is seamless, no need to build a bundle, Invisible.js does that for you on the fly.
+
 ## REST and MongoDB integration
 
-Invisible extends your models to handle your MongoDB persistence, no matter if you are at the client or 
-the server:
+In addition to making your models available everywhere, Invisible extends them with methods to handle 
+persistence. In the server this means interacting with MongoDB and in the client making requests to an
+auto-generated REST API, that subsequently performs the same DB action.
 
+TODO: describe all methods
+
+TODO: better examples
 ```javascript
 jane.save();
 Invisible.Person.query({firstName: "Jane"}, function(results){
     console.log(results[0].fullName()); //Jane Doe
 });
+
+#TODO explain query syntax (link to mongo driver). Mention id treatment
 ```
 ## Validations
 
-TODO
+TODO: explain revalidator integration
+
+TODO: explain custom validation metthods
+
+## Real time events
+
+TODO: explain socket.io integration and avaiable methods
