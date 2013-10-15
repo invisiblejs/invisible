@@ -18,7 +18,7 @@ path = require("path");
 invisible = require("invisible");
 
 app = express();
-invisible.server(app, path.join(__dirname, "models"))
+invisible.createServer(app, path.join(__dirname, "models"))
 ```
 
 ## Extending models
