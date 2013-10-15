@@ -3,14 +3,14 @@ _ = require("underscore")
 Invisible = require('../invisible')
 
 if !Invisible.isClient()
-    io = require('socket.io').listen(3001)
+    io = require('socket.io').listen(Invisible.server)
     io.set('log level', 1)
 
 module.exports = (InvisibleModel) ->
 
     modelName = InvisibleModel.modelName
 
-    InvisibleModel.socket = io_client.connect("http://localhost:3001/#{modelName}")
+    InvisibleModel.socket = io_client.connect("http://localhost/#{modelName}")
 
     if !Invisible.isClient()
         InvisibleModel.serverSocket = io.of("/#{modelName}")

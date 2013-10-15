@@ -6,9 +6,15 @@ Invisible.isClient = () -> window?
 if Invisible.isClient()
     window.Invisible = Invisible
 else
-    Invisible.server = (app, rootFolder) ->
+    Invisible.createServer = (app, rootFolder, cb) ->
+
+        Invisible.server = require('http').createServer(app).listen app.get("port"), () ->
+            cb() if cb?
+
         app.use(require('./bundle')(rootFolder))
         require('./routes')(app)
+
+        return Invisible.server
 
 Invisible.createModel = (modelName, InvisibleModel) ->
 
