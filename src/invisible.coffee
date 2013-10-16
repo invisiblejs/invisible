@@ -6,7 +6,13 @@ Invisible.isClient = () -> window?
 if Invisible.isClient()
     window.Invisible = Invisible
 else
-    Invisible.createServer = (app, rootFolder, cb) ->
+    Invisible.createServer = (app, rootFolder, config, cb) ->
+
+        if typeof(config) == "function"
+            cb = config
+            config = undefined
+
+        require('./config').customize(config)
 
         Invisible.server = require('http').createServer(app).listen app.get("port"), () ->
             cb() if cb?
@@ -28,4 +34,3 @@ Invisible.createModel = (modelName, InvisibleModel) ->
 
     Invisible[modelName] = InvisibleModel
     return InvisibleModel
-

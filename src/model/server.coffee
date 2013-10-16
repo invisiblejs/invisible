@@ -1,11 +1,11 @@
 mongo = require('mongodb')
 _ = require("underscore")
+config = require('../config')
 
 ObjectID = mongo.ObjectID
-uri = global.invisibledb or 'mongodb://127.0.0.1:27017/invisible'
 db = undefined
 
-mongo.connect uri, (err, database) ->
+mongo.connect config.db_uri, (err, database) ->
     throw err if err?
     db = database
 
