@@ -1,6 +1,7 @@
 Invisible = require('../../')
 assert = require('assert')
 mongo = require('mongodb')
+config = require('../../lib/config')
 
 class Person
     constructor: (@name) ->
@@ -17,9 +18,9 @@ class Person
 
 db = undefined
 before (done) ->
-    global.invisibledb = 'mongodb://127.0.0.1:27017/invisible-test'
+    config.db_uri = 'mongodb://127.0.0.1:27017/invisible-test'
     
-    mongo.connect global.invisibledb, (err, database) ->
+    mongo.connect config.db_uri, (err, database) ->
         db = database
         db.dropDatabase(done)
 
