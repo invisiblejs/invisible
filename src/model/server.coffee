@@ -5,6 +5,7 @@ config = require('../config')
 ObjectID = mongo.ObjectID
 db = undefined
 
+console.log("Conecting to #{config.db_uri}")
 mongo.connect config.db_uri, (err, database) ->
     throw err if err?
     db = database
