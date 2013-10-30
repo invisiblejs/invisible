@@ -4,6 +4,7 @@ Invisible = require('../invisible')
 
 if !Invisible.isClient()
     io = require('socket.io').listen(Invisible.server)
+    Invisible.io = io
     io.set('log level', 1)
 
 module.exports = (InvisibleModel) ->
