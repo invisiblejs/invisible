@@ -11,7 +11,8 @@ module.exports = (InvisibleModel) ->
 
     modelName = InvisibleModel.modelName
 
-    InvisibleModel.socket = io_client.connect("http://localhost/#{modelName}")
+    localUrl = if window? then window.location.hostname else "localhost"
+    InvisibleModel.socket = io_client.connect("#{localUrl}/#{modelName}")
 
     if !Invisible.isClient()
         InvisibleModel.serverSocket = io.of("/#{modelName}")
