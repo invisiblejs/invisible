@@ -1,5 +1,6 @@
 http = require("http")
 _ = require("underscore")
+Invisible = require('../invisible')
 
 handleResponse = (cb) ->
     ###
@@ -11,11 +12,10 @@ handleResponse = (cb) ->
             fullBody += chunk
         res.on 'end', () ->
             if res.statusCode != 200
-                return cb(new Error("Bad request"))
+                return cb(new Error("Error"))
 
             data = JSON.parse(fullBody)
             cb(null, data)
-
 
 module.exports = (InvisibleModel) ->
 
@@ -27,10 +27,11 @@ module.exports = (InvisibleModel) ->
             cb(null, model)
 
         http.request(
-                {path: "/invisible/#{InvisibleModel.modelName}/#{id}/", method: "GET"}, 
+                {path: "/invisible/#{InvisibleModel.modelName}/#{id}/", method: "GET", headers: Invisible.headers}, 
                 handleResponse(processData)).end()
 
     InvisibleModel.query = (query, opts, cb) -> 
+
         #handle optional arg
         if not cb?
             if not opts?
@@ -50,7 +51,7 @@ module.exports = (InvisibleModel) ->
             cb(null, models)
         
         http.request(
-                {path: "/invisible/#{InvisibleModel.modelName}/#{qs}", method: "GET"}, 
+                {path: "/invisible/#{InvisibleModel.modelName}/#{qs}", method: "GET", headers: Invisible.headers}, 
                 handleResponse(processData)).end()
 
     InvisibleModel::save = (cb) -> 
@@ -68,16 +69,19 @@ module.exports = (InvisibleModel) ->
             if not result.valid
                 return cb(result.errors)
 
+            headers = Invisible.headers
+            headers['content-type'] = "application/json"
+
             if model._id?
                 req = http.request(
                     {path: "/invisible/#{InvisibleModel.modelName}/#{model._id}/", method: "PUT",
-                    headers: { 'content-type': "application/json" }}, 
+                    headers: headers}, 
                     handleResponse(update))
             
             else
                 req = http.request(
                     {path: "/invisible/#{InvisibleModel.modelName}/", method: "POST", 
-                    headers: { 'content-type': "application/json" }}, 
+                    headers: headers}, 
                     handleResponse(update))
             
             req.write(JSON.stringify(model))
@@ -94,7 +98,7 @@ module.exports = (InvisibleModel) ->
 
                     cb(null, model)
 
-            http.request({path: "/invisible/#{InvisibleModel.modelName}/#{@_id}/", method: "DELETE"}, 
+            http.request({path: "/invisible/#{InvisibleModel.modelName}/#{@_id}/", method: "DELETE", headers: Invisible.headers}, 
                 _cb).end()
         return
 

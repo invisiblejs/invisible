@@ -21,6 +21,7 @@ describe 'Client createModel()', () ->
     before () ->
         #mocking client
         Invisible.isClient = () -> return true
+        Invisible.headers = {}
 
         Invisible.createModel('Person', Person)
         person = new Invisible.Person("Martin")
@@ -42,6 +43,7 @@ describe 'Client InvisibleModel', () ->
         nock.disableNetConnect()
         #mocking client
         Invisible.isClient = () -> return true
+        Invisible.headers = {}
 
         Invisible.createModel('Person', Person)
         person = new Invisible.Person("Martin")

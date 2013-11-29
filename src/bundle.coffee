@@ -12,14 +12,17 @@ module.exports = (rootFolder, opt) ->
     b.ignore('./bundle')
     b.ignore('./routes')
     b.ignore('./config')
+    b.ignore('./auth')
     b.ignore('socket.io')
+
 
     # walk through model files
     modelFiles = fs.readdirSync(rootFolder)
-    for modelFile in modelFiles
-        b.add(path.join(rootFolder, modelFile))
+    for modelName in modelFiles
+        modelFile = path.join(rootFolder, modelName)
+        b.add(modelFile)
         #Require all bundled models so they can be accesed in the server
-        require(path.join(rootFolder, modelFile))
+        require(modelFile)
 
     # Support for CoffeeScript
     b.transform(coffeeify)
