@@ -9,7 +9,7 @@ module.exports = (req, res, next) ->
         username = req.header('InvisibleUsername')
         password = req.header('InvisiblePassword')
         if !username or !password
-            res.send(401)
+            return res.send(401)
 
         config.authenticate username, password, (err, success) ->
             if err then return next(err)

@@ -11,7 +11,16 @@ if Invisible.isClient()
         Invisible.headers = {InvisibleUsername: username, InvisiblePassword: password}
         return
 
-    Invisible.headers = {InvisibleUsername: window.sessionStorage.InvisibleUsername, InvisiblePassword: window.sessionStorage.InvisiblePassword}
+    Invisible.logout = () ->
+        Invisible.headers = {}
+        delete window.sessionStorage.InvisibleUsername
+        delete window.sessionStorage.InvisiblePassword
+
+    if window.sessionStorage.InvisibleUsername
+        Invisible.headers = {InvisibleUsername: window.sessionStorage.InvisibleUsername, InvisiblePassword: window.sessionStorage.InvisiblePassword}
+    else
+        Invisible.headers = {}
+
 else
     Invisible.createServer = (app, rootFolder, config, cb) ->
 
