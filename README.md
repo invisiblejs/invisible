@@ -13,11 +13,11 @@ npm install invisible
 
 Wire up Invisible into your [express](http://expressjs.com/) app:
 ```javascript
-express = require("express");
-path = require("path");
-invisible = require("invisible");
+var express = require("express");
+var path = require("path");
+var invisible = require("invisible");
 
-app = express();
+var app = express();
 invisible.createServer(app, path.join(__dirname, "models"))
 ```
 
@@ -26,9 +26,9 @@ invisible.createServer(app, path.join(__dirname, "models"))
 To make your models available everywhere, define them and call `Invisible.createModel`
 
 ```javascript
-Invisible = require("invisible");
-crypto = require("crypto");
-_s = require("underscore.string");
+var Invisible = require("invisible");
+var crypto = require("crypto");
+var _s = require("underscore.string");
 
 function Person(firstName, lastName, email){
     this.firstName = firstName;
@@ -52,8 +52,8 @@ module.exports = Invisible.createModel("Person", Person);
 Now your models will be available under the Invisible namespace. Require as usual in the server:
 
 ```javascript
-Invisible = require("invisible")
-john = new Invisible.Person("John", "Doe", "john.doe@mail.com");
+var Invisible = require("invisible")
+var john = new Invisible.Person("John", "Doe", "john.doe@mail.com");
 john.fullName(); //John Doe
 ```
 
@@ -62,7 +62,7 @@ In the client, just add the invisible script:
 ```html
 <script src="invisible.js"></script>
 <script>
-    jane = new Invisible.Person("Jane", "Doe", "jane.doe@mail.com");
+    var jane = new Invisible.Person("Jane", "Doe", "jane.doe@mail.com");
     alert(jane.fullName()); //Jane Doe
 </script>
 ```
@@ -182,7 +182,7 @@ Person.prototype.validations = {
     }
 }
 
-john = new Person("john.doe@none.com");
+var john = new Person("john.doe@none.com");
 john.save(function(err, result){
     console.log("All OK here.");
 });
