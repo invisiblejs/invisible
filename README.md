@@ -20,12 +20,14 @@ var invisible = require("invisible");
 var app = express();
 invisible.createServer(app, path.join(__dirname, "models"))
 ```
+The second parameter is the directory where Invisible will look for model files.
 
 ## Extending models
 
-To make your models available everywhere, define them and call `Invisible.createModel`
+To make your models available everywhere, define them and call `Invisible.createModel`. 
 
 ```javascript
+// models/person.js
 var Invisible = require("invisible");
 var crypto = require("crypto");
 var _s = require("underscore.string");
