@@ -18,9 +18,11 @@ var path = require("path");
 var invisible = require("invisible");
 
 var app = express();
+app.use(express.bodyParser());
 invisible.createServer(app, path.join(__dirname, "models"))
 ```
-The second parameter is the directory where Invisible will look for model files.
+The second parameter is the directory where Invisible will look for model files. Note the bodyParser middleware
+is required for Invisible to work.
 
 ## Extending models
 
