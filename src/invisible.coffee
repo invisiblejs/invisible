@@ -10,26 +10,32 @@ if Invisible.isClient()
         http = require("http")
 
         setToken = (err, data)->
-            Invisible.headers.InvisibleAuthToken = data.token
+            t = new Date()
+            data['expires_in'] = t.setSeconds(t.getSeconds() + data.expires_in)
+            Invisible.AuthToken = data
             cb()
 
-        http.request(
+        req = http.request(
                 path: "/invisible/authtoken/" 
-                method: "GET", 
-                headers:
-                    InvisibleUsername: username
-                    InvisiblePassword: password 
-                utils.handleResponse(setToken)).end()
+                method: "POST", 
+                utils.handleResponse(setToken))
+
+        req.write JSON.stringify
+            grant_type: "password"
+            username: username
+            password: password
+
+        req.end()
 
 
     Invisible.logout = () ->
-        Invisible.headers = {}
+        Invisible.AuthToken = {}
         delete window.sessionStorage.InvisibleAuthToken
 
     if window.sessionStorage.InvisibleAuthToken
-        Invisible.headers.InvisibleAuthToken = window.sessionStorage.InvisibleAuthToken
+        Invisible.AuthToken = window.sessionStorage.InvisibleAuthToken
     else
-        Invisible.headers = {}
+        Invisible.AuthToken = {}
 
 else
     Invisible.createServer = (app, rootFolder, config, cb) ->

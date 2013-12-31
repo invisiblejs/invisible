@@ -3,6 +3,27 @@ _ = require("underscore")
 Invisible = require('../invisible')
 utils = require('../utils')
 
+
+authRequest = (opts, cb)->
+    ###
+    Returns a request that includes the required auth hedaer. Uses the 
+    AuthToken if present, and refreshes it if necessary. If no AuthToken is 
+    present, it does not include authorization headers.
+    ###
+
+    if opts.AuthToken and opts.AuthToken.access_token
+        #build auth header
+        opts.headers = opts.headers or {}
+
+        if opts.AuthToken.expires_in and new Date() > opts.AuthToken.expires_in
+            #TODO refresh token
+            return
+
+        opts.headers['Authorization'] = 'Bearer ' + opts.AuthToken.access_token
+
+    return http.request(opts, cb)
+
+
 module.exports = (InvisibleModel) ->
 
     InvisibleModel.findById = (id, cb) -> 
@@ -12,8 +33,8 @@ module.exports = (InvisibleModel) ->
             model = _.extend(new InvisibleModel(), data)
             cb(null, model)
 
-        http.request(
-                {path: "/invisible/#{InvisibleModel.modelName}/#{id}/", method: "GET", headers: Invisible.headers}, 
+        authRequest(
+                {path: "/invisible/#{InvisibleModel.modelName}/#{id}/", method: "GET"}, 
                 utils.handleResponse(processData)).end()
 
     InvisibleModel.query = (query, opts, cb) -> 
@@ -36,8 +57,8 @@ module.exports = (InvisibleModel) ->
             models = (_.extend(new InvisibleModel(), d) for d in data)
             cb(null, models)
         
-        http.request(
-                {path: "/invisible/#{InvisibleModel.modelName}/#{qs}", method: "GET", headers: Invisible.headers}, 
+        authRequest(
+                {path: "/invisible/#{InvisibleModel.modelName}/#{qs}", method: "GET"}, 
                 utils.handleResponse(processData)).end()
 
     InvisibleModel::save = (cb) -> 
@@ -55,17 +76,17 @@ module.exports = (InvisibleModel) ->
             if not result.valid
                 return cb(result.errors)
 
-            headers = Invisible.headers
-            headers['content-type'] = "application/json"
+            headers = 
+                'content-type': "application/json"
 
             if model._id?
-                req = http.request(
+                req = authRequest(
                     {path: "/invisible/#{InvisibleModel.modelName}/#{model._id}/", method: "PUT",
                     headers: headers}, 
                     utils.handleResponse(update))
             
             else
-                req = http.request(
+                req = authRequest(
                     {path: "/invisible/#{InvisibleModel.modelName}/", method: "POST", 
                     headers: headers}, 
                     utils.handleResponse(update))
@@ -84,7 +105,7 @@ module.exports = (InvisibleModel) ->
 
                     cb(null, model)
 
-            http.request({path: "/invisible/#{InvisibleModel.modelName}/#{@_id}/", method: "DELETE", headers: Invisible.headers}, 
+            authRequest({path: "/invisible/#{InvisibleModel.modelName}/#{@_id}/", method: "DELETE"}, 
                 _cb).end()
         return
 
