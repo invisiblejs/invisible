@@ -1,21 +1,7 @@
 http = require("http")
 _ = require("underscore")
 Invisible = require('../invisible')
-
-handleResponse = (cb) ->
-    ###
-    Collects the response body, parses it as JSON and passes it to the callback.
-    ###
-    return (res) ->
-        fullBody = ''
-        res.on 'data', (chunk) -> 
-            fullBody += chunk
-        res.on 'end', () ->
-            if res.statusCode != 200
-                return cb(new Error("Error"))
-
-            data = JSON.parse(fullBody)
-            cb(null, data)
+utils = require('../utils')
 
 module.exports = (InvisibleModel) ->
 
@@ -28,7 +14,7 @@ module.exports = (InvisibleModel) ->
 
         http.request(
                 {path: "/invisible/#{InvisibleModel.modelName}/#{id}/", method: "GET", headers: Invisible.headers}, 
-                handleResponse(processData)).end()
+                utils.handleResponse(processData)).end()
 
     InvisibleModel.query = (query, opts, cb) -> 
 
@@ -52,7 +38,7 @@ module.exports = (InvisibleModel) ->
         
         http.request(
                 {path: "/invisible/#{InvisibleModel.modelName}/#{qs}", method: "GET", headers: Invisible.headers}, 
-                handleResponse(processData)).end()
+                utils.handleResponse(processData)).end()
 
     InvisibleModel::save = (cb) -> 
         model = this
@@ -76,13 +62,13 @@ module.exports = (InvisibleModel) ->
                 req = http.request(
                     {path: "/invisible/#{InvisibleModel.modelName}/#{model._id}/", method: "PUT",
                     headers: headers}, 
-                    handleResponse(update))
+                    utils.handleResponse(update))
             
             else
                 req = http.request(
                     {path: "/invisible/#{InvisibleModel.modelName}/", method: "POST", 
                     headers: headers}, 
-                    handleResponse(update))
+                    utils.handleResponse(update))
             
             req.write(JSON.stringify(model))
             req.end()

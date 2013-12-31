@@ -1,23 +1,33 @@
 
+utils = require('./utils')
 module.exports = Invisible = {}
 
 Invisible.isClient = () -> window?
 
 if Invisible.isClient()
     window.Invisible = Invisible
-    Invisible.login = (username, password) ->
-        window.sessionStorage.InvisibleUsername = username
-        window.sessionStorage.InvisiblePassword = password
-        Invisible.headers = {InvisibleUsername: username, InvisiblePassword: password}
-        return
+    Invisible.login = (username, password, cb) ->
+        http = require("http")
+
+        setToken = (err, data)->
+            Invisible.headers.InvisibleAuthToken = data.token
+            cb()
+
+        http.request(
+                path: "/invisible/authtoken/" 
+                method: "GET", 
+                headers:
+                    InvisibleUsername: username
+                    InvisiblePassword: password 
+                utils.handleResponse(setToken)).end()
+
 
     Invisible.logout = () ->
         Invisible.headers = {}
-        delete window.sessionStorage.InvisibleUsername
-        delete window.sessionStorage.InvisiblePassword
+        delete window.sessionStorage.InvisibleAuthToken
 
-    if window.sessionStorage.InvisibleUsername
-        Invisible.headers = {InvisibleUsername: window.sessionStorage.InvisibleUsername, InvisiblePassword: window.sessionStorage.InvisiblePassword}
+    if window.sessionStorage.InvisibleAuthToken
+        Invisible.headers.InvisibleAuthToken = window.sessionStorage.InvisibleAuthToken
     else
         Invisible.headers = {}
 
