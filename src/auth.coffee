@@ -16,26 +16,33 @@ generateToken = (user, cb) ->
         token = buf.toString('hex')
         
         crypto.randomBytes 48, (ex, buf)->
-            refresh = buf.toString('hex')
-            
-            #TODO set expire via config
-            t = new Date()
-            t.setSeconds(t.getSeconds() + 86410)
-
             data = 
                 token: token
                 user: user._id
-                refresh: refresh
-                expires: t
+            
+            seconds = config.authExpiration
+            if seconds 
+                #require expiration
+                refresh = buf.toString('hex')
+                t = new Date()
+                t.setSeconds(t.getSeconds() + seconds + 10)
+
+                data.refresh = refresh
+                data.expires = t
 
             col.save data, (err, result)->
                 cb(err) if err
-                cb null, 
+
+                token = 
                     token_type: "bearer"
                     acces_token: token
-                    refresh_token: refresh
-                    expires_in: 86400
 
+                if seconds
+                    token.refresh_token: refresh
+                    token.expires_in: seconds
+
+                cb(null, token)
+                    
 
 getToken = (req, res) ->
     ### 
