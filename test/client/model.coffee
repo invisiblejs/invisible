@@ -15,6 +15,17 @@ class Person
     validateInvalid: (cb) ->
         cb(valid: false, errors:['something failed'])
 
+
+describe 'Client Invisible', () ->
+    it 'should make a request when logging in', () ->
+        fail()
+
+    it 'should save an auth token whe logging in', () ->
+        fail()
+
+    it 'should delete the token when logging out', () ->
+        fail()
+
 describe 'Client createModel()', () ->
     person = undefined
 
@@ -175,3 +186,24 @@ describe 'Client InvisibleModel', () ->
         person.save (err, result)->
             assert(err)
             done()
+
+    it 'Should not include the Authorization header when auth not configured', ()->
+        fail()
+
+    it 'Should include the Authorization header on save', ()->
+        fail()
+
+    it 'Should include the Authorization header on update', ()->
+        fail()
+
+    it 'Should include the Authorization header on query', ()->
+        fail()
+
+    it 'Should include the Authorization header on findById', ()->
+        fail()
+
+    it 'Should include the Authorization header on delete', ()->
+        fail()
+
+    it 'Should refresh the AuthToken when expired', ()->
+        fail()
