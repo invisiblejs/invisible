@@ -19,8 +19,7 @@ describe 'REST routes', () ->
         config.db_uri = 'mongodb://127.0.0.1:27017/invisible-test'
     
         mongo.connect config.db_uri, (err, database) ->
-            db = database
-            db.dropDatabase(done)
+            database.dropDatabase(done)
 
         class Person
             constructor: (@name) ->
@@ -135,37 +134,3 @@ describe 'REST routes', () ->
         .end (err, res) ->
             assert.equal(res.statusCode, 400)
             done()
-
-describe 'Auth routes', () ->
-    
-    it 'Should send a 401 when authentication is configured', ()->
-        fail()
-
-    it 'Should send send a 200 when including a valid token', ()->
-        fail()
-
-    it 'Should send send a 401 when including an invalid token', ()->
-        fail()
-
-    it 'Should send send a 401 when the token has expired', ()->
-        fail()
-
-    it 'Should generate a new token when authenticated', ()->
-        fail()
-
-    it 'Should not generate a token when not authenticated', ()->
-        fail()
-
-    it 'Should not generate a token when the credentials are invalid', ()->
-        fail()
-
-    it 'Should refresh the token when given a valid refresh token', ()->
-        fail()
-
-    it 'Should not refresh the token when not given a refresh token', ()->
-        fail()
-
-    it 'Should not refresh the token when given an invalid refresh token', ()->
-        fail()
-
-

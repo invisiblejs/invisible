@@ -28,8 +28,7 @@ authRequest = (opts, payload, cb)->
         req.end()
 
     #Check if token refresh required
-    if (opts.AuthToken and opts.AuthToken.expires_in 
-        and new Date() > opts.AuthToken.expires_in)
+    if opts.AuthToken and opts.AuthToken.expires_in and new Date() > opts.AuthToken.expires_in
         
         setToken = (err, data)->
             t = new Date()

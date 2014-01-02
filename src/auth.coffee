@@ -38,8 +38,8 @@ generateToken = (user, cb) ->
                     acces_token: token
 
                 if seconds
-                    token.refresh_token: refresh
-                    token.expires_in: seconds
+                    token.refresh_token = refresh
+                    token.expires_in = seconds
 
                 cb(null, token)
                     
@@ -98,10 +98,10 @@ module.exports = (req, res, next) ->
     token = header.split(" ")[1]
     
     col.findOne {token: token}, (err, token) ->
-        if err
+        if err or not token
             return res.send(401)
 
-        if token.expires and new Date() > token.expires:
+        if token.expires and new Date() > token.expires
             return res.send(401)
         
         Invisible[config.userModel or 'User'].findById token.user.toString(), (err, user)->
