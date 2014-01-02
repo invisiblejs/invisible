@@ -43,6 +43,15 @@ getToken = (req, res) ->
     client credentials or a previously generated refresh token.
     ###
 
+    sendToken = (err, user) ->
+        if err or not user
+            return res.send(401)
+        generateToken user, (err, token)->
+            if err
+                return res.send(401)
+            return res.send(200, token)
+            
+
     if req.body.grant_type == 'password' 
         #User authenticates
         username = req.body.username
@@ -50,19 +59,16 @@ getToken = (req, res) ->
         if !username or !password
             return res.send(401)
         
-        config.authenticate username, password, (err, user) ->
-            if err or not user
-                return res.send(401)
-            generateToken user, (err, token)->
-                if not err
-                    return res.send(200, token)
-                return res.send(401)
+        config.authenticate(username, password, sendToken)
 
     else if req.body.grant_type == 'refresh_token'
         #Token is refreshed
-        #TODO get user from refresh_token, call generate
-        return
-    return res.send(401)
+        refresh = req.body.refresh_token
+        col.findOne refresh: refresh, (err, token)->
+            Invisible[config.userModel or 'User'].findById(token.user.toString(), sendToken)
+    
+    else
+        return res.send(401)
 
 
 module.exports = (req, res, next) ->
@@ -88,7 +94,8 @@ module.exports = (req, res, next) ->
         if err
             return res.send(401)
 
-        #FIXME check that it's not expired
+        if token.expires and new Date() > token.expires:
+            return res.send(401)
         
         Invisible[config.userModel or 'User'].findById token.user.toString(), (err, user)->
             if err

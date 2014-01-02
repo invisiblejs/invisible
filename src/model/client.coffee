@@ -4,24 +4,52 @@ Invisible = require('../invisible')
 utils = require('../utils')
 
 
-authRequest = (opts, cb)->
+authRequest = (opts, payload, cb)->
     ###
-    Returns a request that includes the required auth hedaer. Uses the 
+    Sends a request that includes the required auth header. Uses the 
     AuthToken if present, and refreshes it if necessary. If no AuthToken is 
     present, it does not include authorization headers.
+    An optional payload is written to the request if present.
     ###
 
-    if opts.AuthToken and opts.AuthToken.access_token
-        #build auth header
-        opts.headers = opts.headers or {}
+    if not cb
+        cb = payload
+        payload = undefined
 
-        if opts.AuthToken.expires_in and new Date() > opts.AuthToken.expires_in
-            #TODO refresh token
-            return
+    sendRequest = ()->
+        if opts.AuthToken and opts.AuthToken.access_token
+            #build auth header
+            opts.headers = opts.headers or {}
+            opts.headers['Authorization'] = 'Bearer ' + opts.AuthToken.access_token
 
-        opts.headers['Authorization'] = 'Bearer ' + opts.AuthToken.access_token
+        req = http.request(opts, cb)
+        if payload
+            req.write(payload)
+        req.end()
 
-    return http.request(opts, cb)
+    #Check if token refresh required
+    if (opts.AuthToken and opts.AuthToken.expires_in 
+        and new Date() > opts.AuthToken.expires_in)
+        
+        setToken = (err, data)->
+            t = new Date()
+            data['expires_in'] = t.setSeconds(t.getSeconds() + data.expires_in)
+            Invisible.AuthToken = data
+            sendRequest()
+
+        req = http.request(
+                path: "/invisible/authtoken/" 
+                method: "POST", 
+                utils.handleResponse(setToken))
+
+        req.write JSON.stringify
+            grant_type: "refresh_token"
+            refresh_token: token.refresh_token
+        
+        req.end()
+
+    else
+        sendRequest()
 
 
 module.exports = (InvisibleModel) ->
@@ -35,7 +63,7 @@ module.exports = (InvisibleModel) ->
 
         authRequest(
                 {path: "/invisible/#{InvisibleModel.modelName}/#{id}/", method: "GET"}, 
-                utils.handleResponse(processData)).end()
+                utils.handleResponse(processData))
 
     InvisibleModel.query = (query, opts, cb) -> 
 
@@ -59,7 +87,7 @@ module.exports = (InvisibleModel) ->
         
         authRequest(
                 {path: "/invisible/#{InvisibleModel.modelName}/#{qs}", method: "GET"}, 
-                utils.handleResponse(processData)).end()
+                utils.handleResponse(processData))
 
     InvisibleModel::save = (cb) -> 
         model = this
@@ -80,20 +108,17 @@ module.exports = (InvisibleModel) ->
                 'content-type': "application/json"
 
             if model._id?
-                req = authRequest(
+                authRequest(
                     {path: "/invisible/#{InvisibleModel.modelName}/#{model._id}/", method: "PUT",
-                    headers: headers}, 
+                    headers: headers}, JSON.stringify(model),
                     utils.handleResponse(update))
             
             else
-                req = authRequest(
+                authRequest(
                     {path: "/invisible/#{InvisibleModel.modelName}/", method: "POST", 
-                    headers: headers}, 
+                    headers: headers}, JSON.stringify(model),
                     utils.handleResponse(update))
             
-            req.write(JSON.stringify(model))
-            req.end()
-    
     InvisibleModel::delete = (cb)-> 
         if @_id?
             model = this
@@ -106,7 +131,7 @@ module.exports = (InvisibleModel) ->
                     cb(null, model)
 
             authRequest({path: "/invisible/#{InvisibleModel.modelName}/#{@_id}/", method: "DELETE"}, 
-                _cb).end()
+                _cb)
         return
 
     return InvisibleModel
