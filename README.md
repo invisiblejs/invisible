@@ -236,3 +236,64 @@ Invisible.Person.onDelete(function(model){
     console.log(model.fullName() + " has been deleted");
 });
 ```
+
+## Authentication
+
+Invisible.js provides a default method to authenticate the requests to the REST API, based on OAuth2's Resource
+Owner Password flow. This means than when activating authentication, a route is exposed that exchanges user
+credentials for a request token used to sign the rest of the API calls. Unsigned calls will get a 401 response.
+
+To use authentication, you must first define a user model in whatever way you like; the only constraint is that 
+you can identify it by a set of parameters such as user/password. By default the `User` name is assumed for the
+model, but this can be overriden via the `userModel` configuration.
+
+```javascript
+
+function User(email){
+    this.email = email;
+}
+
+User.prototype.setPassword = function(rawPassword){
+    this.hashedPassword = someHashFunction(rawPassword);
+}
+
+User.prototype.isPassword = function(rawPassword){
+    return this.hashedPassword == someHashFunction(rawPassword);
+}
+
+module.exports = Invisible.createModel("User", User);
+```
+
+Once the User model is defined, authentication is activated by defining an `authenticate` function in the 
+configuration, that takes the credentials and returns the authenticated user:
+
+```javascript
+//auth.js
+module.exports = function authenticateUser(email, password, done){
+
+    Invisible.User.query({email: email}, function(err, users){
+        if (err) {
+            return done(err);
+        }
+        if (users.length < 1){
+            return done(null, false);
+        }
+
+        var user = users[0];
+        if (!user.isPassword(password)) {
+            return done(null, false);
+        }
+        return done(null, user);
+    });
+
+}
+
+//app.js
+
+//...express and invisible configuration...
+auth = require("./auth");
+invisible.createServer(app, path.join(__dirname, "models"), {authenticate: auth});
+```
+
+Optionallu, an `authExpiration` configuration can also be included to specify the amount of seconds the acess token
+should be used before requiring a refresh. The token refresh is managed seamlessly by the client models.
