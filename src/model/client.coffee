@@ -16,11 +16,13 @@ authRequest = (opts, payload, cb)->
         cb = payload
         payload = undefined
 
+    Token = Invisible.AuthToken
+
     sendRequest = ()->
-        if opts.AuthToken and opts.AuthToken.access_token
+        if Token and Token.access_token
             #build auth header
             opts.headers = opts.headers or {}
-            opts.headers['Authorization'] = 'Bearer ' + opts.AuthToken.access_token
+            opts.headers['Authorization'] = 'Bearer ' + Token.access_token
 
         req = http.request(opts, cb)
         if payload
@@ -28,12 +30,12 @@ authRequest = (opts, payload, cb)->
         req.end()
 
     #Check if token refresh required
-    if opts.AuthToken and opts.AuthToken.expires_in and new Date() > opts.AuthToken.expires_in
+    if Token and Token.expires_in and new Date() > Token.expires_in
         
         setToken = (err, data)->
             t = new Date()
             data['expires_in'] = t.setSeconds(t.getSeconds() + data.expires_in)
-            Invisible.AuthToken = data
+            Invisible.AuthToken = Token = data
             sendRequest()
 
         req = http.request(
@@ -43,7 +45,7 @@ authRequest = (opts, payload, cb)->
 
         req.write JSON.stringify
             grant_type: "refresh_token"
-            refresh_token: token.refresh_token
+            refresh_token: Token.refresh_token
         
         req.end()
 

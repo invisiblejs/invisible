@@ -16,31 +16,6 @@ class Person
         cb(valid: false, errors:['something failed'])
 
 
-# describe 'Client Invisible', () ->
-    
-#     before () ->
-#         #mocking client
-#         Invisible.isClient = () -> return true
-#         Invisible.headers = {}
-
-
-#     it 'should make a request when logging in', (done) ->
-#         authreq = nock('http://localhost:80').post('/invisible/authtoken/', 
-#             username: "Facundo" 
-#             password: "pass" 
-#             grant_type: "password").reply(200, 
-#             access_token: "access"
-#             token_type: "bearer")
-
-#         Invisible.login "Facundo", "pass", ()->
-#             assert authreq.isDone()
-
-#     it 'should save an auth token whe logging in', () ->
-#         fail()
-
-#     it 'should delete the token when logging out', () ->
-#         fail()
-
 describe 'Client createModel()', () ->
     person = undefined
 
@@ -202,23 +177,106 @@ describe 'Client InvisibleModel', () ->
             assert(err)
             done()
 
-    # it 'Should not include the Authorization header when auth not configured', ()->
-    #     fail()
+describe 'Client Authenticated methods', () ->
 
-    # it 'Should include the Authorization header on save', ()->
-    #     fail()
+    person = undefined
 
-    # it 'Should include the Authorization header on update', ()->
-    #     fail()
+    before () ->
+        nock.disableNetConnect()
+        #mocking client
+        Invisible.isClient = () -> return true
 
-    # it 'Should include the Authorization header on query', ()->
-    #     fail()
+        class Person
+            constructor: (@name) ->
+        Invisible.createModel('Person', Person)
+        person = new Invisible.Person("Martin")
 
-    # it 'Should include the Authorization header on findById', ()->
-    #     fail()
+    after () ->
+        nock.enableNetConnect()
 
-    # it 'Should include the Authorization header on delete', ()->
-    #     fail()
+    beforeEach ()->
+        Invisible.AuthToken = 
+            access_token: "MyToken"
 
-    # it 'Should refresh the AuthToken when expired', ()->
-    #     fail()
+    it 'Should not include the Authorization header when auth not configured', (done)->
+        Invisible.AuthToken = undefined
+
+        findreq = nock('http://localhost:80')
+        .get('/invisible/Person/theid/')
+        .matchHeader("Authorization", undefined)
+        .reply(200, _id:'theid', name: 'Carlos')
+
+        Invisible.Person.findById "theid", (err, model)->
+            assert findreq.isDone()
+            done()
+
+    it 'Should include the Authorization header on save', (done)->
+        savereq = nock('http://localhost:80')
+        .post('/invisible/Person/', {name: "Martin"})
+        .matchHeader("Authorization", "Bearer MyToken")
+        .reply(200, {_id: "someid"})
+        person.save () ->
+            assert savereq.isDone()
+            done()
+        
+    it 'Should include the Authorization header on update', (done)->
+        updatereq = nock('http://localhost:80')
+        .put('/invisible/Person/someid/', {_id: "someid", name: "Martin"})
+        .matchHeader("Authorization", "Bearer MyToken")
+        .reply(200, {_id: "someid"})
+        person.save () ->
+            assert updatereq.isDone()
+            done()
+
+    it 'Should include the Authorization header on query', (done)->
+        queryreq = nock('http://localhost:80')
+        .get('/invisible/Person/?query=%7B%7D&opts=%7B%22limit%22%3A1%7D')
+        .matchHeader("Authorization", "Bearer MyToken")
+        .reply(200, [{name: "Martin", _id:"2"}])
+        
+        Invisible.Person.query {}, limit: 1, (e, models) ->
+            assert queryreq.isDone()
+            done()
+
+    it 'Should include the Authorization header on findById', (done)->
+        findreq = nock('http://localhost:80')
+        .get('/invisible/Person/theid/')
+        .matchHeader("Authorization", "Bearer MyToken")
+        .reply(200, _id:'theid', name: 'Carlos')
+
+        Invisible.Person.findById "theid", (err, model)->
+            assert findreq.isDone()
+            done()
+
+    it 'Should include the Authorization header on delete', (done)->
+        deletereq = nock('http://localhost:80')
+        .delete('/invisible/Person/someid/')
+        .matchHeader("Authorization", "Bearer MyToken")
+        .reply(200)
+        person.delete () ->
+            assert deletereq.isDone()
+            done()
+
+    it 'Should refresh the AuthToken when expired', (done)->
+        d = new Date()
+        d.setSeconds(d.getSeconds() - 10)
+
+        Invisible.AuthToken = 
+            access_token: "MyToken"
+            refresh_token: "MyRefresh"
+            expires_in: d
+
+        findreq = nock('http://localhost:80')
+        .post('/invisible/authtoken/', {refresh_token: "MyRefresh", grant_type: "refresh_token"})
+        .reply(200, access_token:'MyNewToken', refresh_token: 'MyNewRefresh', expires_in: 3600)
+        .get('/invisible/Person/theid/')
+        .matchHeader("Authorization", "Bearer MyNewToken")
+        .reply(200, _id:'theid', name: 'Martin')
+
+        Invisible.Person.findById "theid", (err, model)->
+            assert findreq.isDone()
+            assert.equal(Invisible.AuthToken.refresh_token, "MyNewRefresh")
+            assert Invisible.AuthToken.expires_in > new Date()
+            done()
+
+    #TODO test auth fails gracefully

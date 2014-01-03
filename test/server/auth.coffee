@@ -156,3 +156,6 @@ describe 'Auth routes', () ->
         .end (err, res) ->
             assert.equal(res.statusCode, 401)
             done()
+
+    it 'Should not allow reusing the refresh token', (done)->
+        fail()
