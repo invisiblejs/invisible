@@ -75,8 +75,10 @@ getToken = (req, res) ->
 
         col.findOne refresh: refresh, (err, token)->
             if err or not token
-                return res.send(401)                
-            Invisible[config.userModel or 'User'].findById(token.user.toString(), sendToken)
+                return res.send(401)
+
+            col.remove refresh: token.refresh, (err)->
+                Invisible[config.userModel or 'User'].findById(token.user.toString(), sendToken)
     
     else
         return res.send(401)

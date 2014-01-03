@@ -158,4 +158,25 @@ describe 'Auth routes', () ->
             done()
 
     it 'Should not allow reusing the refresh token', (done)->
-        fail()
+        expires = new Date()
+        expires.setSeconds(expires.getSeconds() - 10)
+        token = 
+            token: "expired"
+            refresh: "refresh"
+            expires: expires
+            user: user._id
+
+        col = db.collection("AuthToken")
+        col.save token, (err, token)->
+            request(app)
+            .get('/invisible/authtoken/')
+            .send(grant_type: "refresh_token", refresh_token: "refresh")
+            .end (err, res) ->
+                request(app)
+                .get('/invisible/authtoken/')
+                .send(grant_type: "refresh_token", refresh_token: "refresh")
+                .end (err, res) ->
+                    assert.equal(res.statusCode, 401)
+                    done()
+
+    #FIXME authtoken should work with POST only
