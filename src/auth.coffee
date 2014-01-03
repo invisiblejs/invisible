@@ -11,7 +11,6 @@ mongo.connect config.db_uri, (err, database) ->
 
 generateToken = (user, cb) ->
     ### Takes a user model a generates a new access_token for it. ###
-
     crypto.randomBytes 48, (ex, buf)->
         token = buf.toString('hex')
         
@@ -35,7 +34,7 @@ generateToken = (user, cb) ->
 
                 token = 
                     token_type: "bearer"
-                    acces_token: token
+                    access_token: token
 
                 if seconds
                     token.refresh_token = refresh
@@ -71,7 +70,12 @@ getToken = (req, res) ->
     else if req.body.grant_type == 'refresh_token'
         #Token is refreshed
         refresh = req.body.refresh_token
+        if not refresh
+            return res.send(401)
+
         col.findOne refresh: refresh, (err, token)->
+            if err or not token
+                return res.send(401)                
             Invisible[config.userModel or 'User'].findById(token.user.toString(), sendToken)
     
     else
@@ -90,7 +94,7 @@ module.exports = (req, res, next) ->
 
     if req.path.indexOf('/invisible/authtoken/') == 0
         # exchange credentials per token
-        return createToken(req, res)
+        return getToken(req, res)
 
     header = req.header('Authorization')
     if not header or not header.indexOf("Bearer ") == 0
