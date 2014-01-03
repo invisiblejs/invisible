@@ -41,7 +41,8 @@ authRequest = (opts, payload, cb)->
 
         req = http.request(
                 path: "/invisible/authtoken/" 
-                method: "POST", 
+                method: "POST"
+                headers: 'content-type': "application/json",
                 utils.handleResponse(setToken))
 
         req.write JSON.stringify
