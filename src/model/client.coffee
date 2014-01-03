@@ -36,6 +36,7 @@ authRequest = (opts, payload, cb)->
             t = new Date()
             data['expires_in'] = t.setSeconds(t.getSeconds() + data.expires_in)
             Invisible.AuthToken = Token = data
+            window.localStorage.InvisibleAuthToken = JSON.stringify(data) if window?
             sendRequest()
 
         req = http.request(

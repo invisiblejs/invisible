@@ -30,11 +30,12 @@ generateToken = (user, cb) ->
                 data.expires = t
 
             col.save data, (err, result)->
-                cb(err) if err
+                return cb(err) if err
 
                 token = 
                     token_type: "bearer"
-                    access_token: token
+                    access_token: data.token
+                    user_id: user._id.toString()
 
                 if seconds
                     token.refresh_token = refresh
@@ -49,6 +50,7 @@ getToken = (req, res) ->
     client credentials or a previously generated refresh token.
     ###
 
+
     sendToken = (err, user) ->
         if err or not user
             return res.send(401)
@@ -57,7 +59,6 @@ getToken = (req, res) ->
                 return res.send(401)
             return res.send(200, token)
             
-
     if req.body.grant_type == 'password' 
         #User authenticates
         username = req.body.username
@@ -84,6 +85,20 @@ getToken = (req, res) ->
         return res.send(401)
 
 
+restrictedUrl = (req) ->
+    ### Returns true if the request is to a url that should be restricted ###
+    if not config.authenticate or req.path.indexOf('/invisible/') != 0
+        # not using auth or accessing a non invisible url
+        return false
+
+    # FIXME this is not ideal
+    userUrl = '/invisible/' + (config.userModel or 'User')
+    if req.method == 'POST' and req.path.indexOf(userUrl) == 0
+        #allow post to user for registration
+        return false
+
+    return true
+
 module.exports = (req, res, next) ->
     ### 
     Auth middleware. If authentication is configured, exposes a "authtoken"
@@ -91,7 +106,7 @@ module.exports = (req, res, next) ->
     All other endpoints will require the token in the Authorization header.
     ###
 
-    if not config.authenticate
+    if not restrictedUrl(req)
         return next()
 
     if req.path.indexOf('/invisible/authtoken/') == 0

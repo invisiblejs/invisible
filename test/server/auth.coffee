@@ -19,8 +19,8 @@ describe 'Auth routes', () ->
     db = undefined
 
     before (done) ->
-        config.authenticate = (user, password, cb) ->
-            if user == "Facundo" and password == "pass"
+        config.authenticate = (username, password, cb) ->
+            if username == "Facundo" and password == "pass"
                 return cb(null, user)
             return cb("failed!")
         config.authExpiration = 10
