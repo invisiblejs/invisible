@@ -19,8 +19,7 @@ describe 'REST routes', () ->
         config.db_uri = 'mongodb://127.0.0.1:27017/invisible-test'
     
         mongo.connect config.db_uri, (err, database) ->
-            db = database
-            db.dropDatabase(done)
+            database.dropDatabase(done)
 
         class Person
             constructor: (@name) ->

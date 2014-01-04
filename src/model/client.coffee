@@ -1,20 +1,58 @@
 http = require("http")
 _ = require("underscore")
+Invisible = require('../invisible')
+utils = require('../utils')
 
-handleResponse = (cb) ->
-    ###
-    Collects the response body, parses it as JSON and passes it to the callback.
-    ###
-    return (res) ->
-        fullBody = ''
-        res.on 'data', (chunk) -> 
-            fullBody += chunk
-        res.on 'end', () ->
-            if res.statusCode != 200
-                return cb(new Error("Bad request"))
 
-            data = JSON.parse(fullBody)
-            cb(null, data)
+authRequest = (opts, payload, cb)->
+    ###
+    Sends a request that includes the required auth header. Uses the 
+    AuthToken if present, and refreshes it if necessary. If no AuthToken is 
+    present, it does not include authorization headers.
+    An optional payload is written to the request if present.
+    ###
+
+    if not cb
+        cb = payload
+        payload = undefined
+
+    Token = Invisible.AuthToken
+
+    sendRequest = ()->
+        if Token and Token.access_token
+            #build auth header
+            opts.headers = opts.headers or {}
+            opts.headers['Authorization'] = 'Bearer ' + Token.access_token
+
+        req = http.request(opts, cb)
+        if payload
+            req.write(payload)
+        req.end()
+
+    #Check if token refresh required
+    if Token and Token.expires_in and new Date() > Token.expires_in
+        
+        setToken = (err, data)->
+            t = new Date()
+            data['expires_in'] = t.setSeconds(t.getSeconds() + data.expires_in)
+            Invisible.AuthToken = Token = data
+            window.localStorage.InvisibleAuthToken = JSON.stringify(data) if window?
+            sendRequest()
+
+        req = http.request(
+                path: "/invisible/authtoken/" 
+                method: "POST"
+                headers: 'content-type': "application/json",
+                utils.handleResponse(setToken))
+
+        req.write JSON.stringify
+            grant_type: "refresh_token"
+            refresh_token: Token.refresh_token
+        
+        req.end()
+
+    else
+        sendRequest()
 
 
 module.exports = (InvisibleModel) ->
@@ -26,11 +64,12 @@ module.exports = (InvisibleModel) ->
             model = _.extend(new InvisibleModel(), data)
             cb(null, model)
 
-        http.request(
+        authRequest(
                 {path: "/invisible/#{InvisibleModel.modelName}/#{id}/", method: "GET"}, 
-                handleResponse(processData)).end()
+                utils.handleResponse(processData))
 
     InvisibleModel.query = (query, opts, cb) -> 
+
         #handle optional arg
         if not cb?
             if not opts?
@@ -49,9 +88,9 @@ module.exports = (InvisibleModel) ->
             models = (_.extend(new InvisibleModel(), d) for d in data)
             cb(null, models)
         
-        http.request(
+        authRequest(
                 {path: "/invisible/#{InvisibleModel.modelName}/#{qs}", method: "GET"}, 
-                handleResponse(processData)).end()
+                utils.handleResponse(processData))
 
     InvisibleModel::save = (cb) -> 
         model = this
@@ -68,21 +107,21 @@ module.exports = (InvisibleModel) ->
             if not result.valid
                 return cb(result.errors)
 
+            headers = 
+                'content-type': "application/json"
+
             if model._id?
-                req = http.request(
+                authRequest(
                     {path: "/invisible/#{InvisibleModel.modelName}/#{model._id}/", method: "PUT",
-                    headers: { 'content-type': "application/json" }}, 
-                    handleResponse(update))
+                    headers: headers}, JSON.stringify(model),
+                    utils.handleResponse(update))
             
             else
-                req = http.request(
+                authRequest(
                     {path: "/invisible/#{InvisibleModel.modelName}/", method: "POST", 
-                    headers: { 'content-type': "application/json" }}, 
-                    handleResponse(update))
+                    headers: headers}, JSON.stringify(model),
+                    utils.handleResponse(update))
             
-            req.write(JSON.stringify(model))
-            req.end()
-    
     InvisibleModel::delete = (cb)-> 
         if @_id?
             model = this
@@ -94,8 +133,8 @@ module.exports = (InvisibleModel) ->
 
                     cb(null, model)
 
-            http.request({path: "/invisible/#{InvisibleModel.modelName}/#{@_id}/", method: "DELETE"}, 
-                _cb).end()
+            authRequest({path: "/invisible/#{InvisibleModel.modelName}/#{@_id}/", method: "DELETE"}, 
+                _cb)
         return
 
     return InvisibleModel
