@@ -313,3 +313,52 @@ Once login is successful, the calls to the REST API will be allowed to the clien
 provided to drop the tokens from being used in further model requests.
 
 The only endpoint which does not require a signed request is the POST to the user model, to allow user registration.
+
+## Authorization
+Once you can identify the user making requests, you'll usually want to establish what he can and can't do with the data.
+The models provide hooks to authorize a user to call its methods: `allowCreate`, `allowUpdate`, `allowFind` and `allowDelete`. All of them take the user instance and should callback telling if the method is allowed to that user:
+
+```javascript
+function Message(from, to, text){
+    this.from = from._id.toString();
+    this.to = to._id.toString();
+    this.text = text;
+}
+
+Message.prototype.allowCreate(user, cb) {
+    //a user can only create messages sent by him
+    return cb(null, from === user._id.toString());
+}
+
+Message.prototype.allowUpdate(user, cb) {
+    //a user can only update messages sent by him
+    return cb(null, from === user._id.toString());
+}
+
+Message.prototype.allowFind(user, cb) {
+    //a user can only get messages sent by him or to him
+    return cb(null, from === user._id.toString() || to === user._id.toString());
+}
+
+Message.prototype.allowDelete(user, cb) {
+    //a user cannot delete messages
+    return cb(null, false);
+}
+
+module.exports = Invisible.createModel("User", User);
+```
+
+Another hook, `baseQuery`, is available to restrict what segment of the database the user should have access to.
+It also takes the user, and callbacks with a criteria object like the one for the [query method](/#query). This base criteria
+is and-ed with the criteria used in `query` to filter out unauthorized data. Following the previous example:
+
+```javascript
+Message.baseQuery = function(user, cb){
+    //only expose message sent to or by the user
+    return cb(null, {$or: [{from: user._id.toString()}, {to: user._id.toString()}]})
+}
+```
+Now when calling `Invisible.Message.query` in the client, only messages sent by and to the logged user will be 
+received.
+
+
