@@ -26,7 +26,7 @@ cleanQuery = (query) ->
 module.exports = (InvisibleModel)->
 
     InvisibleModel.findById = (id, cb) ->
-        col = db.collection(InvisibleModel.modelName) 
+        col = db.collection(InvisibleModel.modelName)
         col.findOne {_id: new ObjectID(id)}, (err, result) ->
             if err?
                 return cb(err)
@@ -45,7 +45,7 @@ module.exports = (InvisibleModel)->
             else
                 cb = opts
             opts = {}
-        
+
         cleanQuery(query)
 
         col.find(query, {}, opts).toArray (err, results) ->
@@ -55,7 +55,7 @@ module.exports = (InvisibleModel)->
             models = (_.extend(new InvisibleModel(), r) for r in results)
             cb(null, models)
 
-    InvisibleModel::save = (cb) -> 
+    InvisibleModel::save = (cb) ->
         model = this
 
         @validate (result) ->
@@ -83,7 +83,7 @@ module.exports = (InvisibleModel)->
                 data._id = new ObjectID(data._id)
             col.save data, update
 
-    InvisibleModel::delete = (cb)-> 
+    InvisibleModel::delete = (cb)->
         model = this
         col = db.collection(InvisibleModel.modelName)
         col.remove {_id: @_id}, (err, result) ->

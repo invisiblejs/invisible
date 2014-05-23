@@ -9,10 +9,10 @@ module.exports = (app) ->
     app.delete("/invisible/:modelName/:id", remove)
 
 checkAuth = (req, res, model, method, cb)->
-    ### 
+    ###
     If the user is defined in the request (i.e. authentication is on), and
     the given model has an allow method with the given name, execute it to
-    check if the user is authorized to fulfill the request. If it's authorized 
+    check if the user is authorized to fulfill the request. If it's authorized
     call cb, otherwise send a 401 response.
     ###
 
@@ -27,7 +27,7 @@ checkAuth = (req, res, model, method, cb)->
 
 
 #rest controllers
-query = (req, res) -> 
+query = (req, res) ->
     if req.query.query?
         criteria = JSON.parse(req.query.query)
     else
@@ -50,8 +50,8 @@ save = (req, res) ->
 
         instance.save (e, instance) ->
             if e
-                return res.send(400, e)            
-            res.send(200, instance) 
+                return res.send(400, e)
+            res.send(200, instance)
 
 show = (req, res) ->
     Model = Invisible[req.params.modelName]
@@ -69,7 +69,7 @@ show = (req, res) ->
 
 update = (req, res) ->
     Model = Invisible[req.params.modelName]
-    
+
     Model.findById req.params.id, (error, instance) ->
         if instance?
             checkAuth req, res, instance, "allowUpdate", ()->
@@ -78,7 +78,6 @@ update = (req, res) ->
                     if e
                         return res.send(400, e)
                     res.send(200, instance)
-                
         else
             res.send(404)
 

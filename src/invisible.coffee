@@ -21,7 +21,7 @@ if Invisible.isClient()
             cb(null)
 
         req = http.request(
-                path: "/invisible/authtoken/" 
+                path: "/invisible/authtoken/"
                 method: "POST"
                 headers: 'content-type': "application/json",
                 utils.handleResponse(setToken))

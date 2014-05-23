@@ -13,14 +13,14 @@ generateToken = (user, cb) ->
     ### Takes a user model a generates a new access_token for it. ###
     crypto.randomBytes 48, (ex, buf)->
         token = buf.toString('hex')
-        
+
         crypto.randomBytes 48, (ex, buf)->
-            data = 
+            data =
                 token: token
                 user: user._id
-            
+
             seconds = config.authExpiration
-            if seconds 
+            if seconds
                 #require expiration
                 refresh = buf.toString('hex')
                 t = new Date()
@@ -32,7 +32,7 @@ generateToken = (user, cb) ->
             col.save data, (err, result)->
                 return cb(err) if err
 
-                token = 
+                token =
                     token_type: "bearer"
                     access_token: data.token
                     user_id: user._id.toString()
@@ -42,10 +42,10 @@ generateToken = (user, cb) ->
                     token.expires_in = seconds
 
                 cb(null, token)
-                    
+
 
 getToken = (req, res) ->
-    ### 
+    ###
     Controller that generates and saves the access_token, either based on the
     client credentials or a previously generated refresh token.
     ###
@@ -58,14 +58,14 @@ getToken = (req, res) ->
             if err
                 return res.send(401)
             return res.send(200, token)
-            
-    if req.body.grant_type == 'password' 
+
+    if req.body.grant_type == 'password'
         #User authenticates
         username = req.body.username
         password = req.body.password
         if !username or !password
             return res.send(401)
-        
+
         config.authenticate(username, password, sendToken)
 
     else if req.body.grant_type == 'refresh_token'
@@ -80,7 +80,7 @@ getToken = (req, res) ->
 
             col.remove refresh: token.refresh, (err)->
                 Invisible[config.userModel or 'User'].findById(token.user.toString(), sendToken)
-    
+
     else
         return res.send(401)
 
@@ -100,7 +100,7 @@ restrictedUrl = (req) ->
     return true
 
 module.exports = (req, res, next) ->
-    ### 
+    ###
     Auth middleware. If authentication is configured, exposes a "authtoken"
     url to generate an access_token following OAuth2's password grant.
     All other endpoints will require the token in the Authorization header.
@@ -117,14 +117,14 @@ module.exports = (req, res, next) ->
     if not header or not header.indexOf("Bearer ") == 0
         return res.send(401)
     token = header.split(" ")[1]
-    
+
     col.findOne {token: token}, (err, token) ->
         if err or not token
             return res.send(401)
 
         if token.expires and new Date() > token.expires
             return res.send(401)
-        
+
         Invisible[config.userModel or 'User'].findById token.user.toString(), (err, user)->
             if err
                 return res.send(401)

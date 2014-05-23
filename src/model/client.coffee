@@ -6,8 +6,8 @@ utils = require('../utils')
 
 authRequest = (opts, payload, cb)->
     ###
-    Sends a request that includes the required auth header. Uses the 
-    AuthToken if present, and refreshes it if necessary. If no AuthToken is 
+    Sends a request that includes the required auth header. Uses the
+    AuthToken if present, and refreshes it if necessary. If no AuthToken is
     present, it does not include authorization headers.
     An optional payload is written to the request if present.
     ###
@@ -31,7 +31,7 @@ authRequest = (opts, payload, cb)->
 
     #Check if token refresh required
     if Token and Token.expires_in and new Date() > Token.expires_in
-        
+
         setToken = (err, data)->
             t = new Date()
             data['expires_in'] = t.setSeconds(t.getSeconds() + data.expires_in)
@@ -40,7 +40,7 @@ authRequest = (opts, payload, cb)->
             sendRequest()
 
         req = http.request(
-                path: "/invisible/authtoken/" 
+                path: "/invisible/authtoken/"
                 method: "POST"
                 headers: 'content-type': "application/json",
                 utils.handleResponse(setToken))
@@ -48,7 +48,7 @@ authRequest = (opts, payload, cb)->
         req.write JSON.stringify
             grant_type: "refresh_token"
             refresh_token: Token.refresh_token
-        
+
         req.end()
 
     else
@@ -57,7 +57,7 @@ authRequest = (opts, payload, cb)->
 
 module.exports = (InvisibleModel) ->
 
-    InvisibleModel.findById = (id, cb) -> 
+    InvisibleModel.findById = (id, cb) ->
         processData = (err, data) ->
             if err
                 return cb(err)
@@ -65,10 +65,10 @@ module.exports = (InvisibleModel) ->
             cb(null, model)
 
         authRequest(
-                {path: "/invisible/#{InvisibleModel.modelName}/#{id}/", method: "GET"}, 
+                {path: "/invisible/#{InvisibleModel.modelName}/#{id}/", method: "GET"},
                 utils.handleResponse(processData))
 
-    InvisibleModel.query = (query, opts, cb) -> 
+    InvisibleModel.query = (query, opts, cb) ->
 
         #handle optional arg
         if not cb?
@@ -78,7 +78,7 @@ module.exports = (InvisibleModel) ->
             else
                 cb = opts
             opts = {}
-        
+
         qs = ("?query=" + encodeURIComponent(JSON.stringify(query)) +
             "&opts=" + encodeURIComponent(JSON.stringify(opts)))
 
@@ -87,27 +87,27 @@ module.exports = (InvisibleModel) ->
                 return cb(err)
             models = (_.extend(new InvisibleModel(), d) for d in data)
             cb(null, models)
-        
+
         authRequest(
-                {path: "/invisible/#{InvisibleModel.modelName}/#{qs}", method: "GET"}, 
+                {path: "/invisible/#{InvisibleModel.modelName}/#{qs}", method: "GET"},
                 utils.handleResponse(processData))
 
-    InvisibleModel::save = (cb) -> 
+    InvisibleModel::save = (cb) ->
         model = this
 
         update = (err, data) ->
             if err and cb
                 return cb(err)
-            
+
             _.extend(model, data)
             if cb?
                 cb(null, model)
-        
+
         @validate (result) ->
             if not result.valid
                 return cb(result.errors)
 
-            headers = 
+            headers =
                 'content-type': "application/json"
 
             if model._id?
@@ -115,17 +115,17 @@ module.exports = (InvisibleModel) ->
                     {path: "/invisible/#{InvisibleModel.modelName}/#{model._id}/", method: "PUT",
                     headers: headers}, JSON.stringify(model),
                     utils.handleResponse(update))
-            
+
             else
                 authRequest(
-                    {path: "/invisible/#{InvisibleModel.modelName}/", method: "POST", 
+                    {path: "/invisible/#{InvisibleModel.modelName}/", method: "POST",
                     headers: headers}, JSON.stringify(model),
                     utils.handleResponse(update))
-            
-    InvisibleModel::delete = (cb)-> 
+
+    InvisibleModel::delete = (cb)->
         if @_id?
             model = this
-            
+
             _cb = (err, res) ->
                 if cb
                     if err
@@ -133,7 +133,7 @@ module.exports = (InvisibleModel) ->
 
                     cb(null, model)
 
-            authRequest({path: "/invisible/#{InvisibleModel.modelName}/#{@_id}/", method: "DELETE"}, 
+            authRequest({path: "/invisible/#{InvisibleModel.modelName}/#{@_id}/", method: "DELETE"},
                 _cb)
         return
 
