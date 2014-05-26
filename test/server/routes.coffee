@@ -5,9 +5,10 @@ mongo = require('mongodb')
 express = require('express')
 path = require('path')
 app = express()
-app.use express.bodyParser()
+bodyParser = require('body-parser');
 
 config = require('../../lib/config')
+app.use(bodyParser());
 require('../../lib/routes')(app)
 
 
@@ -17,7 +18,7 @@ describe 'REST routes', () ->
 
     before (done) ->
         config.db_uri = 'mongodb://127.0.0.1:27017/invisible-test'
-    
+
         mongo.connect config.db_uri, (err, database) ->
             database.dropDatabase(done)
 
