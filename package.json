@@ -4,37 +4,33 @@
   "description": "DRY models for client and server",
   "main": "index.js",
   "scripts": {
-    "prepublish": "grunt coffee",
     "test": "grunt test"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/sammla/invisible.git"
+    "url": "git://github.com/invisiblejs/invisible.git"
   },
   "author": "Facundo Olano and Martin Paulucci",
   "license": "BSD",
   "bugs": {
-    "url": "https://github.com/sammla/invisible/issues"
+    "url": "https://github.com/invisiblejs/invisible/issues"
   },
   "dependencies": {
     "browserify": "~2.25.1",
-    "path": "~0.4.9",
-    "coffeeify": "~0.5.1",
-    "underscore": "~1.5.1",
     "mongodb": "~1.3.17",
+    "path": "~0.4.9",
+    "revalidator": "^0.1.5",
     "socket.io": "~0.9.16",
     "socket.io-client": "~0.9.16",
-    "revalidator": "git://github.com/facundoolano/revalidator"
+    "underscore": "~1.5.1"
   },
   "devDependencies": {
-    "matchdep": "~0.1.2",
-    "grunt-contrib-coffee": "~0.7.0",
+    "express": "~3.4.0",
     "grunt": "~0.4.1",
     "grunt-contrib-watch": "~0.5.2",
-    "grunt-cli": "~0.1.9",
     "grunt-mocha-test": "~0.6.3",
-    "nock": "git://github.com/facundoolano/nock",
-    "supertest": "~0.7.1",
-    "express": "~3.4.0"
+    "matchdep": "~0.1.2",
+    "nock": "^0.32.1",
+    "supertest": "~0.7.1"
   }
 }
