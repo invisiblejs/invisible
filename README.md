@@ -23,7 +23,7 @@ app.use(invisible.router({
   rootFolder: path.join(__dirname, 'models')
 }));
 
-var server = app.listen(3000);
+app.listen(3000);
 ```
 
 ## Extending models
@@ -233,9 +233,9 @@ To add realtime features:
 ```javascript
 var server = app.listen(3000);
 invisible.addRealtime(server);
-```javascript
+```
 
-And then in yuor code:
+And then in your code:
 ```javascript
 Invisible.Person.onNew(function(model){
     console.log(model.fullName() + " has been created");
