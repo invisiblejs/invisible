@@ -1,6 +1,6 @@
 # [Invisible.js](http://invisiblejs.github.io) [![Build Status](https://secure.travis-ci.org/invisiblejs/invisible.png)](http://travis-ci.org/invisiblejs/invisible) [![Dependencies](https://david-dm.org/invisiblejs/invisible.png)](https://david-dm.org/invisiblejs/invisible)
 
-Invisible is a JavaScript (and CoffeeScript!) library that leverages 
+Invisible is a JavaScript library that leverages 
 [browserify](https://github.com/substack/node-browserify) to achieve the Holy Grail of web programming: 
 model reuse in the client and the server.
 
@@ -11,22 +11,24 @@ Install with npm:
 npm install invisible
 ```
 
-Wire up Invisible into your [express](http://expressjs.com/) app:
+Wire up Invisible into your [express](http://expressjs.com/) (Works only with Express 4.x) app:
 ```javascript
 var express = require("express");
 var path = require("path");
 var invisible = require("invisible");
 
 var app = express();
-app.use(express.bodyParser());
-invisible.createServer(app, path.join(__dirname, "models"))
+
+app.use(invisible.router({
+  rootFolder: path.join(__dirname, 'models')
+}));
+
+var server = app.listen(3000);
 ```
-The second parameter is the directory where Invisible will look for model files. Note the bodyParser middleware
-is required for Invisible to work.
 
 ## Extending models
 
-To make your models available everywhere, define them and call `Invisible.createModel`. 
+To make your models available everywhere, define them and call `Invisible.createModel`.
 
 ```javascript
 // models/person.js
@@ -57,7 +59,7 @@ Now your models will be available under the Invisible namespace. Require as usua
 
 ```javascript
 var Invisible = require("invisible")
-var john = new Invisible.Person("John", "Doe", "john.doe@mail.com");
+var john = new Invisible.models.Person("John", "Doe", "john.doe@mail.com");
 john.fullName(); //John Doe
 ```
 
@@ -66,7 +68,7 @@ In the client, just add the invisible script:
 ```html
 <script src="invisible.js"></script>
 <script>
-    var jane = new Invisible.Person("Jane", "Doe", "jane.doe@mail.com");
+    var jane = new Invisible.models.Person("Jane", "Doe", "jane.doe@mail.com");
     alert(jane.fullName()); //Jane Doe
 </script>
 ```
@@ -227,6 +229,13 @@ properties validations succeed, and stop the validation process upon the first f
 Invisible.js uses [socket.io](http://socket.io/) to emmit an event whenever something changes for a model, and lets you add listener 
 functions to react to those changes in realtime.
 
+To add realtime features:
+```javascript
+var server = app.listen(3000);
+invisible.addRealtime(server);
+```javascript
+
+And then in yuor code:
 ```javascript
 Invisible.Person.onNew(function(model){
     console.log(model.fullName() + " has been created");
