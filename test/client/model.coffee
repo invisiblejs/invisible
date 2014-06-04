@@ -5,7 +5,7 @@ nock = require('nock')
 class Person
     constructor: (@name) ->
     getName: ()-> return @name
-    validations: 
+    validations:
         properties: name: type: 'string'
         methods: ['validateValid1', 'validateValid2']
     validateValid1: (cb) ->
@@ -25,7 +25,7 @@ describe 'Client createModel()', () ->
         Invisible.headers = {}
 
         Invisible.createModel('Person', Person)
-        person = new Invisible.Person("Martin")
+        person = new Invisible.models.Person("Martin")
 
     it 'should be at the client', () ->
         assert(Invisible.isClient())
@@ -47,13 +47,13 @@ describe 'Client InvisibleModel', () ->
         Invisible.headers = {}
 
         Invisible.createModel('Person', Person)
-        person = new Invisible.Person("Martin")
+        person = new Invisible.models.Person("Martin")
 
     after () ->
         nock.enableNetConnect()
 
     it 'should send a POST when saving a new instance and set the _id', (done)->
-        savereq = nock('http://localhost:80').post('/invisible/Person/', 
+        savereq = nock('http://localhost:80').post('/invisible/Person/',
             {name: "Martin"}).reply(200, {_id: "someid"})
         person.save () ->
             assert.equal(person._id, "someid")
@@ -62,7 +62,7 @@ describe 'Client InvisibleModel', () ->
 
     it 'should send a PUT when saving an existent instace and update its values', (done)->
         person.name = "Facundo"
-        updatereq = nock('http://localhost:80').put('/invisible/Person/someid/', 
+        updatereq = nock('http://localhost:80').put('/invisible/Person/someid/',
             {_id: "someid", name: "Facundo"}).reply(200, {_id: "someid"})
         person.save () ->
             assert.equal(person._id, "someid")
@@ -91,8 +91,8 @@ describe 'Client InvisibleModel', () ->
         findreq = nock('http://localhost:80')
         .get('/invisible/Person/anotherid/')
         .reply(200, _id:'anotherid', name: 'Carlos')
-        
-        Invisible.Person.findById 'anotherid', (e, model) ->
+
+        Invisible.models.Person.findById 'anotherid', (e, model) ->
             assert.equal(model._id, 'anotherid')
             assert.equal(model.getName(), 'Carlos')
             assert findreq.isDone()
@@ -102,8 +102,8 @@ describe 'Client InvisibleModel', () ->
         invalidreq = nock('http://localhost:80')
         .get('/invisible/Person/invalidid/')
         .reply(500)
-        
-        Invisible.Person.findById 'invalidid', (e, model) ->
+
+        Invisible.models.Person.findById 'invalidid', (e, model) ->
             assert e
             assert invalidreq.isDone()
             done()
@@ -112,8 +112,8 @@ describe 'Client InvisibleModel', () ->
         missingreq = nock('http://localhost:80')
         .get('/invisible/Person/missingid/')
         .reply(404)
-        
-        Invisible.Person.findById 'missingid', (e, model) ->
+
+        Invisible.models.Person.findById 'missingid', (e, model) ->
             assert e
             assert missingreq.isDone()
             done()
@@ -122,8 +122,8 @@ describe 'Client InvisibleModel', () ->
         queryreq = nock('http://localhost:80')
         .get('/invisible/Person/?query=%7B%7D&opts=%7B%7D')
         .reply(200, [{name: "Facundo", _id:"2"},{name: "Martin", _id:"1"}])
-        
-        Invisible.Person.query (e, models) ->
+
+        Invisible.models.Person.query (e, models) ->
             assert.equal(models[0].getName(), 'Facundo')
             assert.equal(models[1].getName(), 'Martin')
             assert queryreq.isDone()
@@ -133,8 +133,8 @@ describe 'Client InvisibleModel', () ->
         queryreq = nock('http://localhost:80')
         .get('/invisible/Person/?query=%7B%22name%22%3A%22Facundo%22%7D&opts=%7B%7D')
         .reply(200, [{name: "Facundo", _id:"2"}])
-        
-        Invisible.Person.query name:"Facundo", (e, models) ->
+
+        Invisible.models.Person.query name:"Facundo", (e, models) ->
             assert.equal(models[0].getName(), 'Facundo')
             assert queryreq.isDone()
             done()
@@ -143,18 +143,18 @@ describe 'Client InvisibleModel', () ->
         queryreq = nock('http://localhost:80')
         .get('/invisible/Person/?query=%7B%7D&opts=%7B%22limit%22%3A1%7D')
         .reply(200, [{name: "Facundo", _id:"2"}])
-        
-        Invisible.Person.query {}, limit: 1, (e, models) ->
+
+        Invisible.models.Person.query {}, limit: 1, (e, models) ->
             assert.equal(models[0].getName(), 'Facundo')
             assert queryreq.isDone()
             done()
 
     it 'should return a validation error when invalid', (done)->
-        person = new Invisible.Person("Luis")
+        person = new Invisible.models.Person("Luis")
         person.validate (result) ->
             assert(result.valid)
             assert.equal(result.errors.length, 0)
-            
+
             person.name = 15 #invalid
             person.validate (result) ->
                 assert(not result.valid)
@@ -162,7 +162,7 @@ describe 'Client InvisibleModel', () ->
                 done()
 
     it 'should fail on custom validation methods when invalid', (done)->
-        person = new Invisible.Person("Luis")
+        person = new Invisible.models.Person("Luis")
         person.validate (result) ->
             assert(result.valid)
             person.validations.methods = ['validateValid1', 'validateInvalid', 'validateValid2']
@@ -172,7 +172,7 @@ describe 'Client InvisibleModel', () ->
                 done()
 
     it 'should not save an invalid instance', (done)->
-        person = new Invisible.Person(15)
+        person = new Invisible.models.Person(15)
         person.save (err, result)->
             assert(err)
             done()
@@ -189,13 +189,13 @@ describe 'Client Authenticated methods', () ->
         class Person
             constructor: (@name) ->
         Invisible.createModel('Person', Person)
-        person = new Invisible.Person("Martin")
+        person = new Invisible.models.Person("Martin")
 
     after () ->
         nock.enableNetConnect()
 
     beforeEach ()->
-        Invisible.AuthToken = 
+        Invisible.AuthToken =
             access_token: "MyToken"
 
     it 'Should not include the Authorization header when auth not configured', (done)->
@@ -206,7 +206,7 @@ describe 'Client Authenticated methods', () ->
         .matchHeader("Authorization", undefined)
         .reply(200, _id:'theid', name: 'Carlos')
 
-        Invisible.Person.findById "theid", (err, model)->
+        Invisible.models.Person.findById "theid", (err, model)->
             assert findreq.isDone()
             done()
 
@@ -218,7 +218,7 @@ describe 'Client Authenticated methods', () ->
         person.save () ->
             assert savereq.isDone()
             done()
-        
+
     it 'Should include the Authorization header on update', (done)->
         updatereq = nock('http://localhost:80')
         .put('/invisible/Person/someid/', {_id: "someid", name: "Martin"})
@@ -233,8 +233,8 @@ describe 'Client Authenticated methods', () ->
         .get('/invisible/Person/?query=%7B%7D&opts=%7B%22limit%22%3A1%7D')
         .matchHeader("Authorization", "Bearer MyToken")
         .reply(200, [{name: "Martin", _id:"2"}])
-        
-        Invisible.Person.query {}, limit: 1, (e, models) ->
+
+        Invisible.models.Person.query {}, limit: 1, (e, models) ->
             assert queryreq.isDone()
             done()
 
@@ -244,7 +244,7 @@ describe 'Client Authenticated methods', () ->
         .matchHeader("Authorization", "Bearer MyToken")
         .reply(200, _id:'theid', name: 'Carlos')
 
-        Invisible.Person.findById "theid", (err, model)->
+        Invisible.models.Person.findById "theid", (err, model)->
             assert findreq.isDone()
             done()
 
@@ -261,7 +261,7 @@ describe 'Client Authenticated methods', () ->
         d = new Date()
         d.setSeconds(d.getSeconds() - 10)
 
-        Invisible.AuthToken = 
+        Invisible.AuthToken =
             access_token: "MyToken"
             refresh_token: "MyRefresh"
             expires_in: d
@@ -273,7 +273,7 @@ describe 'Client Authenticated methods', () ->
         .matchHeader("Authorization", "Bearer MyNewToken")
         .reply(200, _id:'theid', name: 'Martin')
 
-        Invisible.Person.findById "theid", (err, model)->
+        Invisible.models.Person.findById "theid", (err, model)->
             assert findreq.isDone()
             assert.equal(Invisible.AuthToken.refresh_token, "MyNewRefresh")
             assert Invisible.AuthToken.expires_in > new Date()

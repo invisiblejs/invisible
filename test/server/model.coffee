@@ -6,7 +6,7 @@ config = require('../../lib/config')
 class Person
     constructor: (@name) ->
     getName: ()-> return @name
-    validations: 
+    validations:
         properties: name: type: 'string'
         methods: ['validateValid1', 'validateValid2']
     validateValid1: (cb) ->
@@ -19,7 +19,7 @@ class Person
 db = undefined
 before (done) ->
     config.db_uri = 'mongodb://127.0.0.1:27017/invisible-test'
-    
+
     mongo.connect config.db_uri, (err, database) ->
         db = database
         db.dropDatabase(done)
@@ -29,7 +29,7 @@ describe 'Server createModel()', () ->
 
     before () ->
         Invisible.createModel('Person', Person)
-        person = new Invisible.Person("Martin")
+        person = new Invisible.models.Person("Martin")
 
     it 'should call the original constructor', () ->
         assert.equal(person.name, "Martin")
@@ -45,16 +45,16 @@ describe 'Server InvisibleModel', () ->
 
     before () ->
         Invisible.createModel('Person', Person)
-        martin = new Invisible.Person('Martin')
-        facundo = new Invisible.Person('Facundo')
-        
+        martin = new Invisible.models.Person('Martin')
+        facundo = new Invisible.models.Person('Facundo')
+
 
     it 'should update id and create document on save', (done) ->
         assert(not martin._id?)
         assert(not facundo._id?)
         martin.save ()->
             assert(martin._id?)
-            
+
             db.collection("Person").findOne {_id: martin._id}, (err, result) ->
                 assert(result?)
                 assert.equal(result.name, 'Martin')
@@ -80,20 +80,20 @@ describe 'Server InvisibleModel', () ->
         martin._id = undefined
         martin.save () ->
             id = martin._id.toString()
-            Invisible.Person.findById id, (e, result) ->
+            Invisible.models.Person.findById id, (e, result) ->
                 assert.equal(martin.name, result.name)
                 assert.equal(martin._id.toString(), result._id.toString())
                 done()
 
     it 'should raise an error for finding by an unexistent id', (done) ->
         nonExistentId = '507f1f77bcf86cd700000000'
-        Invisible.Person.findById nonExistentId, (e, result)->
+        Invisible.models.Person.findById nonExistentId, (e, result)->
             assert(e)
             done()
 
     it 'should raise an error for finding by an invalid id', (done)->
         assert.throws () ->
-            Invisible.Person.findById "asdadadsd", (e, result)->
+            Invisible.models.Person.findById "asdadadsd", (e, result)->
                 assert.fail("Shouldn't call this")
             , Error
         done()
@@ -102,7 +102,7 @@ describe 'Server InvisibleModel', () ->
         facundo.save () ->
             assert(facundo._id)
             assert(martin._id)
-            Invisible.Person.query (e, results)->
+            Invisible.models.Person.query (e, results)->
                 assert.equal(results.length, 2)
                 #use getName to assure its a model and not a plain object
                 assert(facundo.name == results[0].getName() or facundo.name == results[1].getName())
@@ -110,7 +110,7 @@ describe 'Server InvisibleModel', () ->
                 done()
 
     it 'should apply filters on query', (done) ->
-        Invisible.Person.query name: "Facundo", (e, results)->
+        Invisible.models.Person.query name: "Facundo", (e, results)->
             assert.equal(results.length, 1)
             assert.equal(results[0].getName(), "Facundo")
             assert.equal(facundo._id.toString(), results[0]._id.toString())
@@ -119,32 +119,32 @@ describe 'Server InvisibleModel', () ->
     it 'should allow querying by _id string', (done) ->
         facundo_id = facundo._id.toString()
         martin_id = martin._id.toString()
-        
-        Invisible.Person.query _id: facundo_id, (e, results)->
+
+        Invisible.models.Person.query _id: facundo_id, (e, results)->
             assert.equal(results.length, 1)
             assert.equal(results[0].getName(), "Facundo")
 
-            Invisible.Person.query _id: $in: [facundo_id], (e, results)->
+            Invisible.models.Person.query _id: $in: [facundo_id], (e, results)->
                 assert.equal(results.length, 1)
                 assert.equal(results[0].getName(), "Facundo")
 
-                Invisible.Person.query _id: $nin: [martin_id], (e, results)->
+                Invisible.models.Person.query _id: $nin: [martin_id], (e, results)->
                     assert.equal(results.length, 1)
                     assert.equal(results[0].getName(), "Facundo")
 
-                    done()        
+                    done()
 
     it 'should apply query options', (done) ->
-        Invisible.Person.query {}, limit: 1, (e, results)->
+        Invisible.models.Person.query {}, limit: 1, (e, results)->
             assert.equal(results.length, 1)
             done()
 
     it 'should return a validation error when invalid', (done)->
-        person = new Invisible.Person("Luis")
+        person = new Invisible.models.Person("Luis")
         person.validate (result) ->
             assert(result.valid)
             assert.equal(result.errors.length, 0)
-            
+
             person.name = 15 #invalid
             person.validate (result) ->
                 assert(not result.valid)
@@ -152,7 +152,7 @@ describe 'Server InvisibleModel', () ->
                 done()
 
     it 'should fail on custom validation methods when invalid', (done)->
-        person = new Invisible.Person("Luis")
+        person = new Invisible.models.Person("Luis")
         person.validate (result) ->
             assert(result.valid)
             person.validations.methods = ['validateValid1', 'validateInvalid', 'validateValid2']
@@ -162,10 +162,10 @@ describe 'Server InvisibleModel', () ->
                 done()
 
     it 'should not save an invalid instance', (done)->
-        person = new Invisible.Person(15)
+        person = new Invisible.models.Person(15)
         person.save (err, result)->
             assert(err)
             done()
-        
+
 
 # TODO should the user handle string ids, mongo ids or both?

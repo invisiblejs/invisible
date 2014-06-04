@@ -29,7 +29,7 @@ describe 'Authentication routes', () ->
             constructor: (@user, @pass) ->
 
         Invisible.createModel("User", User)
-        user = new Invisible.User("Facundo", "pass")
+        user = new Invisible.models.User("Facundo", "pass")
 
         mongo.connect config.db_uri, (err, database) ->
             db = database
@@ -197,8 +197,8 @@ describe 'Authentication routes', () ->
                 constructor: (@text, @from) ->
             Invisible.createModel("Message", Message)
 
-            facundo = new Invisible.User("Facundo", "pass")
-            martin = new Invisible.User("Martin", "pass")
+            facundo = new Invisible.models.User("Facundo", "pass")
+            martin = new Invisible.models.User("Martin", "pass")
 
             mongo.connect config.db_uri, (err, database) ->
                 db = database
@@ -215,9 +215,9 @@ describe 'Authentication routes', () ->
                         col = db.collection("AuthToken")
                         col.save token, (err, token)->
                             martin.save ()->
-                                m1 = new Invisible.Message("Hey", facundo._id)
+                                m1 = new Invisible.models.Message("Hey", facundo._id)
                                 m1.save ()->
-                                    m2 = new Invisible.Message("Bye", martin._id)
+                                    m2 = new Invisible.models.Message("Bye", martin._id)
                                     m2.save ()->
                                         done()
 
@@ -231,7 +231,7 @@ describe 'Authentication routes', () ->
                 done()
 
         it 'Should allow authorized create', (done)->
-            Invisible.Message.prototype.allowCreate = (user, cb)->
+            Invisible.models.Message.prototype.allowCreate = (user, cb)->
                 return cb(null, this.from.toString() == user._id.toString())
 
             request(app)
@@ -244,7 +244,7 @@ describe 'Authentication routes', () ->
                 done()
 
         it 'Should send a 401 for unauthorized create', (done)->
-            Invisible.Message.prototype.allowCreate = (user, cb)->
+            Invisible.models.Message.prototype.allowCreate = (user, cb)->
                 return cb(null, this.from.toString() == user._id.toString())
 
             request(app)
@@ -256,7 +256,7 @@ describe 'Authentication routes', () ->
                 done()
 
         it 'Should allow authorized update', (done)->
-            Invisible.Message.prototype.allowUpdate = (user, cb)->
+            Invisible.models.Message.prototype.allowUpdate = (user, cb)->
                 return cb(null, this.from.toString() == user._id.toString())
 
             request(app)
@@ -269,7 +269,7 @@ describe 'Authentication routes', () ->
                 done()
 
         it 'Should send a 401 for unauthorized update', (done)->
-            Invisible.Message.prototype.allowUpdate = (user, cb)->
+            Invisible.models.Message.prototype.allowUpdate = (user, cb)->
                 return cb(null, this.from.toString() == user._id.toString())
 
             request(app)
@@ -281,7 +281,7 @@ describe 'Authentication routes', () ->
                 done()
 
         it 'Should allow authorized find', (done)->
-            Invisible.Message.prototype.allowFind = (user, cb)->
+            Invisible.models.Message.prototype.allowFind = (user, cb)->
                 return cb(null, this.from.toString() == user._id.toString())
 
             request(app)
@@ -293,7 +293,7 @@ describe 'Authentication routes', () ->
                 done()
 
         it 'Should send a 401 for unauthorized find', (done)->
-            Invisible.Message.allowFind = (user, cb)->
+            Invisible.models.Message.allowFind = (user, cb)->
                 return cb(null, this.from == user._id)
 
             request(app)
@@ -304,7 +304,7 @@ describe 'Authentication routes', () ->
                 done()
 
         it 'Should allow authorized delete', (done)->
-            Invisible.Message.prototype.allowDelete = (user, cb)->
+            Invisible.models.Message.prototype.allowDelete = (user, cb)->
                 return cb(null, this.from.toString() == user._id.toString())
 
             request(app)
@@ -316,7 +316,7 @@ describe 'Authentication routes', () ->
                 done()
 
         it 'Should send a 401 for unauthorized delete', (done)->
-            Invisible.Message.prototype.allowDelete = (user, cb)->
+            Invisible.models.Message.prototype.allowDelete = (user, cb)->
                 return cb(null, this.from.toString() == user._id.toString())
 
             request(app)
