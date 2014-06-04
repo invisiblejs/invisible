@@ -4,11 +4,12 @@ request = require('supertest')
 mongo = require('mongodb')
 express = require('express')
 config = require('../../lib/config')
+bodyParser = require('body-parser');
 
 config.db_uri = 'mongodb://127.0.0.1:27017/invisible-test'
 
 app = express()
-app.use express.bodyParser()
+app.use(bodyParser());
 app.use(require('../../lib/auth'))
 require('../../lib/routes')(app)
 
@@ -29,13 +30,13 @@ describe 'Authentication routes', () ->
 
         Invisible.createModel("User", User)
         user = new Invisible.User("Facundo", "pass")
-    
+
         mongo.connect config.db_uri, (err, database) ->
             db = database
             db.dropDatabase ()->
                 user.save ()->
                     done()
-    
+
     it 'Should send a 401 when authentication is configured', (done)->
         request(app)
         .get('/invisible/User/')
@@ -46,7 +47,7 @@ describe 'Authentication routes', () ->
     it 'Should send send a 200 when including a valid token', (done)->
         expires = new Date()
         expires.setSeconds(expires.getSeconds() + 10)
-        token = 
+        token =
             token: "access"
             refresh: "refresh"
             expires: expires
@@ -73,7 +74,7 @@ describe 'Authentication routes', () ->
     it 'Should send send a 401 when the token has expired', (done)->
         expires = new Date()
         expires.setSeconds(expires.getSeconds() - 10)
-        token = 
+        token =
             token: "expired"
             refresh: "refresh"
             expires: expires
@@ -119,7 +120,7 @@ describe 'Authentication routes', () ->
     it 'Should refresh the token when given a valid refresh token', (done)->
         expires = new Date()
         expires.setSeconds(expires.getSeconds() - 10)
-        token = 
+        token =
             token: "expired"
             refresh: "refresh"
             expires: expires
@@ -158,7 +159,7 @@ describe 'Authentication routes', () ->
     it 'Should not allow reusing the refresh token', (done)->
         expires = new Date()
         expires.setSeconds(expires.getSeconds() - 10)
-        token = 
+        token =
             token: "expired"
             refresh: "refresh"
             expires: expires
@@ -180,7 +181,7 @@ describe 'Authentication routes', () ->
     #FIXME authtoken should work with POST only
 
     describe 'Authorization methods', () ->
-        
+
         db = undefined
         m1 = undefined
         m2 = undefined
@@ -191,7 +192,7 @@ describe 'Authentication routes', () ->
             class User
                 constructor: (@user, @pass) ->
             Invisible.createModel("User", User)
-            
+
             class Message
                 constructor: (@text, @from) ->
             Invisible.createModel("Message", Message)
@@ -205,7 +206,7 @@ describe 'Authentication routes', () ->
                     facundo.save ()->
                         expires = new Date()
                         expires.setSeconds(expires.getSeconds() + 10)
-                        token = 
+                        token =
                             token: "access"
                             refresh: "refresh"
                             expires: expires
