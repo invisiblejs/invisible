@@ -159,6 +159,8 @@ describe 'Server InvisibleModel', () ->
             person.validate (result) ->
                 assert(not result.valid)
                 assert.deepEqual(result.errors, ['something failed'])
+                #restore validations
+                person.validations.methods = ['validateValid1', 'validateValid2']
                 done()
 
     it 'should not save an invalid instance', (done)->
@@ -167,5 +169,47 @@ describe 'Server InvisibleModel', () ->
             assert(err)
             done()
 
+class SocketMock
+    constructor: () ->
+        @listeners = {}
+    on: (event, cb) ->
+        @listeners[event] = cb
+    emit: (event, data) ->
+        @listeners[event](data)
+
+describe 'Server real time events', () ->
+    person = undefined
+
+    before () ->
+        Invisible.createModel('Person', Person)
+        person = new Invisible.models.Person("Martin")
+
+    it "should emit 'new' when creating an instance", (done) ->
+        socket = new SocketMock()
+        socket.on 'new', (model)->
+            assert.equal(model.getName(), "Martin")
+            done()
+        Invisible.models.Person.serverSocket = socket
+        person.save ()->
+            undefined
+
+    it "should emit 'update' when updating an instance", (done) ->
+        socket = new SocketMock()
+        socket.on 'update', (model)->
+            assert.equal(model.getName(), "Facundo")
+            done()
+        Invisible.models.Person.serverSocket = socket
+        person.name = "Facundo"
+        person.save ()->
+            undefined
+
+    it "should emit 'delete' when deleting an instance", (done) ->
+        socket = new SocketMock()
+        socket.on 'delete', (model)->
+            assert.equal(model.getName(), "Facundo")
+            done()
+        Invisible.models.Person.serverSocket = socket
+        person.delete ()->
+            undefined
 
 # TODO should the user handle string ids, mongo ids or both?

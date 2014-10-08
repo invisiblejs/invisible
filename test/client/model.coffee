@@ -177,6 +177,50 @@ describe 'Client InvisibleModel', () ->
             assert(err)
             done()
 
+class SocketMock
+    constructor: () ->
+        @listeners = {}
+    on: (event, cb) ->
+        @listeners[event] = cb
+    emit: (event, data) ->
+        @listeners[event](data)
+
+describe 'Client real time events', () ->
+    person = undefined
+    socket = new SocketMock()
+
+    before () ->
+        nock.disableNetConnect()
+        #mocking client
+        Invisible.isClient = () -> return true
+        Invisible.headers = {}
+
+        Invisible.createModel('Person', Person)
+        Invisible.models.Person.socket = socket
+        person = new Invisible.models.Person("Martin")
+
+    after () ->
+        nock.enableNetConnect()
+
+    it "should call listener on 'new' event", (done)->
+        Invisible.models.Person.on 'new', (model) ->
+            assert.equal(model.getName(), "Martin")
+            done()
+        socket.emit('new', {"name": "Martin"})
+
+    it "should call listener on 'update' event", (done)->
+        Invisible.models.Person.on 'update', (model) ->
+            assert.equal(model.getName(), "Martin")
+            done()
+        socket.emit('update', {"name": "Martin"})
+
+    it "should call listener on 'delete' event", (done)->
+        Invisible.models.Person.on 'delete', (model) ->
+            assert.equal(model.getName(), "Martin")
+            done()
+        socket.emit('delete', {"name": "Martin"})
+
+#FIXME move to another file, breaks the person model
 describe 'Client Authenticated methods', () ->
 
     person = undefined
@@ -280,3 +324,5 @@ describe 'Client Authenticated methods', () ->
             done()
 
     #TODO test auth fails gracefully
+
+
