@@ -237,15 +237,15 @@ invisible.addRealtime(server);
 
 And then in your code:
 ```javascript
-Invisible.Person.onNew(function(model){
+Invisible.Person.on('new', function(model){
     console.log(model.fullName() + " has been created");
 });
 
-Invisible.Person.onUpdate(function(model){
+Invisible.Person.on('update', function(model){
     console.log(model.fullName() + " has been updated");
 });
 
-Invisible.Person.onDelete(function(model){
+Invisible.Person.on('delete', function(model){
     console.log(model.fullName() + " has been deleted");
 });
 ```
