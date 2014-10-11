@@ -22,6 +22,7 @@ describe 'Client createModel()', () ->
     before () ->
         #mocking client
         Invisible.isClient = () -> return true
+        Invisible.getHostname = () -> return "localhost"
         Invisible.headers = {}
 
         Invisible.createModel('Person', Person)
@@ -44,6 +45,7 @@ describe 'Client InvisibleModel', () ->
         nock.disableNetConnect()
         #mocking client
         Invisible.isClient = () -> return true
+        Invisible.getHostname = () -> return "localhost"
         Invisible.headers = {}
 
         Invisible.createModel('Person', Person)
@@ -193,6 +195,7 @@ describe 'Client real time events', () ->
         nock.disableNetConnect()
         #mocking client
         Invisible.isClient = () -> return true
+        Invisible.getHostname = () -> return "localhost"
         Invisible.headers = {}
 
         Invisible.createModel('Person', Person)
@@ -229,6 +232,7 @@ describe 'Client Authenticated methods', () ->
         nock.disableNetConnect()
         #mocking client
         Invisible.isClient = () -> return true
+        Invisible.getHostname = () -> return "localhost"
 
         class Person
             constructor: (@name) ->
