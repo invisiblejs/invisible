@@ -302,7 +302,10 @@ module.exports = function authenticateUser(email, password, done){
 //app.js
 //...express and invisible configurations...
 auth = require("./auth");
-invisible.createServer(app, path.join(__dirname, "models"), {authenticate: auth});
+app.use(invisible.router({
+  rootFolder: path.join(__dirname, 'models'),
+  authenticate: auth
+}));
 ```
 
 Optionally, an `authExpiration` configuration can be included to specify the amount of seconds the acess token
@@ -338,22 +341,22 @@ function Message(from, to, text){
     this.text = text;
 }
 
-Message.prototype.allowCreate(user, cb) {
+Message.prototype.allowCreate = function(user, cb) {
     //a user can only create messages sent by him
     return cb(null, from === user._id.toString());
 }
 
-Message.prototype.allowUpdate(user, cb) {
+Message.prototype.allowUpdate = function(user, cb) {
     //a user can only update messages sent by him
     return cb(null, from === user._id.toString());
 }
 
-Message.prototype.allowFind(user, cb) {
+Message.prototype.allowFind = function(user, cb) {
     //a user can only get messages sent by him or to him
     return cb(null, from === user._id.toString() || to === user._id.toString());
 }
 
-Message.prototype.allowDelete(user, cb) {
+Message.prototype.allowDelete = function(user, cb) {
     //a user cannot delete messages
     return cb(null, false);
 }
