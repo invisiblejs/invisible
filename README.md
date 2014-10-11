@@ -358,7 +358,7 @@ Message.prototype.allowDelete(user, cb) {
     return cb(null, false);
 }
 
-module.exports = Invisible.createModel("User", User);
+module.exports = Invisible.createModel("Message", Message);
 ```
 
 Another hook, `baseQuery`, is available to restrict what segment of the database the user should have access to.
