@@ -1,0 +1,13 @@
+<html>
+  <script src="invisible.js"></script>
+  <script>
+    var john = new Invisible.models.User('john');
+    john.setPassword("secret");
+    john.save();
+    Invisible.login("john", "secret", function(err){
+    	if (!err) {
+    		console.log("john is logged in!");
+    	}
+    });
+  </script>
+</html>
