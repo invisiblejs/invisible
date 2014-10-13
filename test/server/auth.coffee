@@ -326,3 +326,29 @@ describe 'Authentication routes', () ->
                 assert.equal(res.statusCode, 401)
                 done()
 
+describe 'Server socket authentication', () ->
+    it 'Should mark the socket as unauthenticated upon connection', (done)->
+        assert.fail("TODO")
+
+    it 'Should not send messages to unauthenticated sockets', (done)->
+        assert.fail("TODO")
+
+    it 'Should disconnect sockets that do not authenticate', (done)->
+        assert.fail("TODO")
+
+    it 'Should not authenticate without an auth token', (done)->
+        assert.fail("TODO")
+
+    it 'Should not authenticate with an invalid token', (done)->
+        assert.fail("TODO")
+
+    it 'Should not authenticate with an expired token', (done)->
+        assert.fail("TODO")
+
+    it 'Should authenticate with a valid token', (done)->
+        assert.fail("TODO")
+
+    it 'Should send updates to authenticated sockets', (done)->
+        assert.fail("TODO")
+
+

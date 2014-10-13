@@ -119,4 +119,15 @@ describe 'Client Authenticated methods', () ->
             assert Invisible.AuthToken.expires_in > new Date()
             done()
 
+
+describe 'Client socket authentication', () ->
+	it 'Should connect after login', (done)->
+		assert.fail("TODO")
+
+	it 'Should authenticate after connect', (done)->
+		assert.fail("TODO")
+
+	it 'Should disconnect on logout', (done)->
+		assert.fail("TODO")
+
 #TODO test auth fails gracefully

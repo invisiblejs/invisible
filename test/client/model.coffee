@@ -223,6 +223,5 @@ describe 'Client real time events', () ->
             done()
         socket.emit('delete', {"name": "Martin"})
 
-    
 
 
