@@ -1,6 +1,7 @@
 assert = require('assert')
 Invisible = require('../../')
 nock = require('nock')
+EventEmitter =  require('events').EventEmitter;
 
 class Person
     constructor: (@name) ->
@@ -179,17 +180,9 @@ describe 'Client InvisibleModel', () ->
             assert(err)
             done()
 
-class SocketMock
-    constructor: () ->
-        @listeners = {}
-    on: (event, cb) ->
-        @listeners[event] = cb
-    emit: (event, data) ->
-        @listeners[event](data)
-
 describe 'Client real time events', () ->
     person = undefined
-    socket = new SocketMock()
+    socket = new EventEmitter()
 
     before () ->
         nock.disableNetConnect()
