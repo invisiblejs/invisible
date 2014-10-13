@@ -1,26 +1,36 @@
 assert = require('assert')
 Invisible = require('../../')
 nock = require('nock')
+EventEmitter = require('events').EventEmitter;
+proxyquire =  require('proxyquire')
 
 class Person
     constructor: (@name) ->
     getName: ()-> return @name
-    validations:
-        properties: name: type: 'string'
-        methods: ['validateValid1', 'validateValid2']
-    validateValid1: (cb) ->
-        cb(valid: true, errors:[])
-    validateValid2: (cb) ->
-        cb(valid: true, errors:[])
-    validateInvalid: (cb) ->
-        cb(valid: false, errors:['something failed'])
 
+class SocketMock extends EventEmitter
+    connect: (url)->
+        self = @
+        self.connected = true
+        process.nextTick ()->
+            self.emit('connect')
+        return self
+
+socketMock = new SocketMock()
 
 describe 'Client Authenticated methods', () ->
 
     person = undefined
 
     before () ->
+        global.window = {location: {hostname: "localhost"}, localStorage: {}}
+        
+        authMethods = proxyquire('../../lib/auth/methods', {
+            'socket.io-client': socketMock
+            })
+
+        Invisible.login = authMethods.login
+        Invisible.logout = authMethods.logout
         nock.disableNetConnect()
         #mocking client
         Invisible.isClient = () -> return true
@@ -32,6 +42,7 @@ describe 'Client Authenticated methods', () ->
         person = new Invisible.models.Person("Martin")
 
     after () ->
+        delete global.window
         nock.enableNetConnect()
 
     beforeEach ()->
@@ -119,15 +130,50 @@ describe 'Client Authenticated methods', () ->
             assert Invisible.AuthToken.expires_in > new Date()
             done()
 
+    it 'Should set the AuthToken on login', (done)->
+        tokenreq = nock('http://localhost:80')
+        .post('/invisible/authtoken/', {username: "user", password: "pass", grant_type: "password"})
+        .reply(200, access_token:'otherToken', refresh_token: 'otherRefresh', expires_in: 3600)
 
-describe 'Client socket authentication', () ->
-	it 'Should connect after login', (done)->
-		assert.fail("TODO")
+        Invisible.login "user", "pass", ()->
+            assert.equal Invisible.AuthToken.access_token, 'otherToken'
+            assert.equal Invisible.AuthToken.refresh_token, 'otherRefresh'
+            token = JSON.parse window.localStorage.InvisibleAuthToken
+            assert.deepEqual Invisible.AuthToken, token
+            done()
 
-	it 'Should authenticate after connect', (done)->
-		assert.fail("TODO")
+    it 'Should remove the AuthToken on logout', ()->
+        assert Invisible.AuthToken
+        assert window.localStorage.InvisibleAuthToken
+        Invisible.logout()
+        assert !Invisible.AuthToken
+        assert !window.localStorage.InvisibleAuthToken
 
-	it 'Should disconnect on logout', (done)->
-		assert.fail("TODO")
+    it 'Should connect socket after login', (done)->
+        socketMock.connected = false
+        tokenreq = nock('http://localhost:80')
+        .post('/invisible/authtoken/', {username: "user", password: "pass", grant_type: "password"})
+        .reply(200, access_token:'otherToken', refresh_token: 'otherRefresh', expires_in: 3600)
+
+        Invisible.login "user", "pass", ()->
+            assert socketMock.connected
+            done()
+
+    it 'Should authenticate socket after connect', (done)->
+        socketMock.once 'authenticate', (data)->
+            assert.equal data.token, "otherToken"
+            done()
+
+        tokenreq = nock('http://localhost:80')
+        .post('/invisible/authtoken/', {username: "user", password: "pass", grant_type: "password"})
+        .reply(200, access_token:'otherToken', refresh_token: 'otherRefresh', expires_in: 3600)
+
+        Invisible.login "user", "pass", ()->
+            undefined
+
+    it 'Should disconnect socket on logout', (done)->
+        socketMock.once 'disconnect', (data)->
+            done()
+        Invisible.logout()
 
 #TODO test auth fails gracefully
