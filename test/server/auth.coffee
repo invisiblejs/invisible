@@ -326,14 +326,94 @@ describe 'Authentication routes', () ->
                 assert.equal(res.statusCode, 401)
                 done()
 
+EventEmitter = require('events').EventEmitter;
+
+class NamesPaceMock extends EventEmitter
+    constructor: (@name)->
+        @sockets = []
+        @connected = {}
+    connect: (client)->
+        @sockets.push(client)
+        @connected[client.id] = client
+        @emit('connection', client)
+
+class ServerSocketMock extends EventEmitter
+    constructor: ()->
+        @nsps = {
+            "/Person": new NamesPaceMock("/Person"),
+            "/Messages": new NamesPaceMock("/Messages")
+        }
+    connect: (nsp, client)->
+        @emit('connection', client)
+        @nsps[nsp].connect(client)
+
+
+class ClientSocketMock extends EventEmitter
+    constructor: (@id)->
+        undefined
+    disconnect: ()->
+        @emit('disconnect')
+
 describe 'Server socket authentication', () ->
+
+    server = undefined
+    client = undefined
+    db = undefined
+
+    before (done)->
+        #TODO make the socket login independent from the tokens
+        class User
+            constructor: (@user, @pass) ->
+        Invisible.createModel("User", User)
+
+        facundo = new Invisible.models.User("Facundo", "pass")
+
+        mongo.connect config.db_uri, (err, database) ->
+            db = database
+            db.dropDatabase ()->
+                facundo.save ()->
+                    expires = new Date()
+                    expires.setSeconds(expires.getSeconds() + 10)
+                    token =
+                        token: "access"
+                        refresh: "refresh"
+                        expires: expires
+                        user: facundo._id
+
+                    col = db.collection("AuthToken")
+                    col.save token, (err, token)->
+                        done()
+
+    beforeEach () ->
+        server = new ServerSocketMock()
+        require('../../lib/auth/socket')(server, {
+            timeout:80,
+            authenticate: require('../../lib/auth/socket').check
+            })
+        client = new ClientSocketMock(5)
+
     it 'Should mark the socket as unauthenticated upon connection', (done)->
-        assert.fail("TODO")
+        assert client.auth == undefined
+        server.connect("/Person", client)
+        process.nextTick ()->
+            assert client.auth == false
+            done()
 
     it 'Should not send messages to unauthenticated sockets', (done)->
-        assert.fail("TODO")
+        server.connect("/Person", client)
+        process.nextTick ()->
+            assert !server.nsps['/Person'][5]
+            done()
 
     it 'Should disconnect sockets that do not authenticate', (done)->
+        server.connect("/Person", client)
+        client.on 'disconnect', ()->
+            done()
+
+    it 'Should authenticate with a valid token', (done)->
+        assert.fail("TODO")
+
+    it 'Should send updates to authenticated sockets', (done)->
         assert.fail("TODO")
 
     it 'Should not authenticate without an auth token', (done)->
@@ -345,10 +425,5 @@ describe 'Server socket authentication', () ->
     it 'Should not authenticate with an expired token', (done)->
         assert.fail("TODO")
 
-    it 'Should authenticate with a valid token', (done)->
-        assert.fail("TODO")
-
-    it 'Should send updates to authenticated sockets', (done)->
-        assert.fail("TODO")
 
 
