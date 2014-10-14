@@ -1,6 +1,7 @@
 <html>
   <script src="invisible.js"></script>
   <script>
+    Invisible.logout();
     var john = new Invisible.models.User('john');
     john.setPassword("secret");
     john.save();
@@ -9,5 +10,9 @@
     		console.log("john is logged in!");
     	}
     });
+    
+    Invisible.models.Message.on('new', function(msg){
+      console.log("new message arrived:", msg.text);
+    })
   </script>
 </html>
