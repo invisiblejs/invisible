@@ -4,7 +4,8 @@ request = require('supertest')
 mongo = require('mongodb')
 express = require('express')
 config = require('../../lib/config')
-bodyParser = require('body-parser');
+bodyParser = require('body-parser')
+sinon = require('sinon')
 
 config.db_uri = 'mongodb://127.0.0.1:27017/invisible-test'
 
@@ -340,8 +341,8 @@ class NamesPaceMock extends EventEmitter
 class ServerSocketMock extends EventEmitter
     constructor: ()->
         @nsps = {
-            "/Person": new NamesPaceMock("/Person"),
-            "/Messages": new NamesPaceMock("/Messages")
+            "/User": new NamesPaceMock("/User"),
+            "/Message": new NamesPaceMock("/Message")
         }
     connect: (nsp, client)->
         @emit('connection', client)
@@ -358,6 +359,7 @@ describe 'Server socket authentication', () ->
 
     server = undefined
     client = undefined
+    facundo = undefined
     db = undefined
 
     before (done)->
@@ -390,68 +392,156 @@ describe 'Server socket authentication', () ->
 
 
     beforeEach () ->
+        #FIXME copy pasted
+        Token = require('../../lib/auth/token')
         server = new ServerSocketMock()
         require('../../lib/auth/socket')(server, {
             timeout:80,
-            authenticate: require('../../lib/auth/token').check
+            authenticate: Token.check
             })
         client = new ClientSocketMock(5)
 
     it 'Should mark the socket as unauthenticated upon connection', (done)->
         assert client.auth == undefined
-        server.connect("/Person", client)
+        server.connect("/User", client)
         process.nextTick ()->
             assert client.auth == false
             done()
 
     it 'Should not send messages to unauthenticated sockets', (done)->
-        server.connect("/Person", client)
+        server.connect("/User", client)
         process.nextTick ()->
-            assert !server.nsps['/Person'][5]
+            assert !server.nsps['/User'][5]
             done()
 
     it 'Should disconnect sockets that do not authenticate', (done)->
-        server.connect("/Person", client)
+        server.connect("/User", client)
         client.on 'disconnect', ()->
             done()
 
     #TODO decouple socket from token tests
     it 'Should authenticate with a valid token', (done)->
-        server.connect("/Person", client)
+        server.connect("/User", client)
         process.nextTick ()->
             client.on 'authenticated', ()->
                 assert client.auth
                 done()
             client.emit('authentication', {token: "access"})
 
+    it 'Should call post auth function', (done)->
+        #FIXME copy pasted
+        Token = require('../../lib/auth/token')
+        server = new ServerSocketMock()
+        client = new ClientSocketMock(5)
+
+        postAuth = (socket, tokenData) ->
+            assert.equal tokenData.token, "access"                        
+            assert.equal socket, client
+            done()
+        
+        require('../../lib/auth/socket')(server, {
+            timeout:80,
+            authenticate: Token.check
+            postAuthenticate: postAuth
+            })
+
+        server.connect("/User", client)
+        process.nextTick ()->
+            client.emit('authentication', {token: "access"})
+
     it 'Should send updates to authenticated sockets', (done)->
-        server.connect("/Person", client)
+        server.connect("/User", client)
         process.nextTick ()->
             client.on 'authenticated', ()->
-                assert.equal server.nsps['/Person'].connected[5], client
+                assert.equal server.nsps['/User'].connected[5], client
                 done()
             client.emit('authentication', {token: "access"})
 
     it 'Should not authenticate without an auth token', (done)->
-        server.connect("/Person", client)
+        server.connect("/User", client)
         process.nextTick ()->
             client.once 'disconnect', ()->
                 done()
             client.emit('authentication', {})
 
     it 'Should not authenticate with an invalid token', (done)->
-        server.connect("/Person", client)
+        server.connect("/User", client)
         process.nextTick ()->
             client.once 'disconnect', ()->
                 done()
             client.emit('authentication', {token: "invalid"})
 
     it 'Should not authenticate with an expired token', (done)->
-        server.connect("/Person", client)
+        server.connect("/User", client)
         process.nextTick ()->
             client.once 'disconnect', ()->
                 done()
             client.emit('authentication', {token: "expired"})
 
+
+describe 'Server socket authorization', () ->
+    client = undefined
+    server = undefined
+    facundo = undefined
+    martin = undefined
+
+    before (done)->
+        class User
+            constructor: (@user, @pass) ->
+        Invisible.createModel("User", User)
+
+        class Message
+            constructor: (@text, @from, @to) ->
+            allowEvents: (user, cb)->
+                cb(null, user._id.toString() == @to.toString())
+
+        Invisible.createModel("Message", Message)
+        facundo = new Invisible.models.User("Facundo", "pass")
+        facundo.save()
+        martin = new Invisible.models.User("Martin", "pass")
+        martin.save()
+        client = new ClientSocketMock(5)
+        server = new ServerSocketMock()
+
+        Invisible.models.User.serverSocket = server.nsps["/User"]
+        Invisible.models.Message.serverSocket = server.nsps["/Message"]
+
+        client.auth = true
+        client.user = facundo
+        done()
+
+    it 'Should send events to any client if allow method not defined', (done)->
+        server.connect("/User", client)
+        person = new Invisible.models.User()
+        
+        #allow not defined, the namespace does regular broadcast
+        Invisible.models.User.serverSocket.once 'new', (model)->
+            assert.equal person, model
+            done()
+
+        person.save ()->
+            undefined
+
+    it 'Should send events to authorized clients', (done)->
+        server.connect("/Message", client)
+        msg = new Invisible.models.Message("hi", martin._id, facundo._id)
+
+        client.once 'new', (model)->
+            assert.equal msg, model
+            done()
+        
+        msg.save ()->
+            undefined
+
+    it 'Should not send events to unauthorized clients', (done)->
+        server.connect("/Message", client)
+        msg = new Invisible.models.Message("hi", facundo._id, martin._id)
+
+        callback = sinon.spy()
+        client.once 'new', callback
+        
+        msg.save ()->
+            sinon.assert.notCalled(callback)
+            done()
 
 
