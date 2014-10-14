@@ -372,23 +372,28 @@ describe 'Server socket authentication', () ->
             db = database
             db.dropDatabase ()->
                 facundo.save ()->
-                    expires = new Date()
-                    expires.setSeconds(expires.getSeconds() + 10)
                     token =
                         token: "access"
                         refresh: "refresh"
-                        expires: expires
                         user: facundo._id
 
                     col = db.collection("AuthToken")
                     col.save token, (err, token)->
-                        done()
+                        expires = new Date()
+                        expires.setSeconds(expires.getSeconds() - 10)
+                        token = {
+                            token: "expired",
+                            expires: expires,
+                            user: facundo._id
+                        }
+                        col.save token, done
+
 
     beforeEach () ->
         server = new ServerSocketMock()
         require('../../lib/auth/socket')(server, {
             timeout:80,
-            authenticate: require('../../lib/auth/socket').check
+            authenticate: require('../../lib/auth/token').check
             })
         client = new ClientSocketMock(5)
 
@@ -410,20 +415,43 @@ describe 'Server socket authentication', () ->
         client.on 'disconnect', ()->
             done()
 
+    #TODO decouple socket from token tests
     it 'Should authenticate with a valid token', (done)->
-        assert.fail("TODO")
+        server.connect("/Person", client)
+        process.nextTick ()->
+            client.on 'authenticated', ()->
+                assert client.auth
+                done()
+            client.emit('authentication', {token: "access"})
 
     it 'Should send updates to authenticated sockets', (done)->
-        assert.fail("TODO")
+        server.connect("/Person", client)
+        process.nextTick ()->
+            client.on 'authenticated', ()->
+                assert.equal server.nsps['/Person'].connected[5], client
+                done()
+            client.emit('authentication', {token: "access"})
 
     it 'Should not authenticate without an auth token', (done)->
-        assert.fail("TODO")
+        server.connect("/Person", client)
+        process.nextTick ()->
+            client.once 'disconnect', ()->
+                done()
+            client.emit('authentication', {})
 
     it 'Should not authenticate with an invalid token', (done)->
-        assert.fail("TODO")
+        server.connect("/Person", client)
+        process.nextTick ()->
+            client.once 'disconnect', ()->
+                done()
+            client.emit('authentication', {token: "invalid"})
 
     it 'Should not authenticate with an expired token', (done)->
-        assert.fail("TODO")
+        server.connect("/Person", client)
+        process.nextTick ()->
+            client.once 'disconnect', ()->
+                done()
+            client.emit('authentication', {token: "expired"})
 
 
 

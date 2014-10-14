@@ -160,7 +160,7 @@ describe 'Client Authenticated methods', () ->
             done()
 
     it 'Should authenticate socket after connect', (done)->
-        socketMock.once 'authenticate', (data)->
+        socketMock.once 'authentication', (data)->
             assert.equal data.token, "otherToken"
             done()
 
