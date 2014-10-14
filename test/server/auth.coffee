@@ -351,7 +351,7 @@ class ServerSocketMock extends EventEmitter
 
 class ClientSocketMock extends EventEmitter
     constructor: (@id)->
-        undefined
+        @client = {}
     disconnect: ()->
         @emit('disconnect')
 
@@ -507,7 +507,7 @@ describe 'Server socket authorization', () ->
         Invisible.models.Message.serverSocket = server.nsps["/Message"]
 
         client.auth = true
-        client.user = facundo
+        client.client.user = facundo
         done()
 
     it 'Should send events to any client if allow method not defined', (done)->
