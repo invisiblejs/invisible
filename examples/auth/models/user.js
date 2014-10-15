@@ -1,7 +1,7 @@
 'use strict';
 
 var crypto = require("crypto")
-var Invisible = require('../..');
+var Invisible = require('../../..');
 
 var SALT = "THIS IS MY SALT";
 

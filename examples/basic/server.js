@@ -2,7 +2,7 @@
 
 var express = require('express');
 var path = require('path');
-var invisible = require('../');
+var invisible = require('../../');
 
 var app = express();
 

@@ -1,4 +1,4 @@
-var Invisible = require('../..');
+var Invisible = require('../../..');
 
 function Message(from_id, to_id, text){
     this.from_id = from_id;
