@@ -335,25 +335,25 @@ Once you can identify the user making requests, you'll usually want to establish
 The models provide hooks to authorize a user to call its methods: `allowCreate`, `allowUpdate`, `allowFind` and `allowDelete`. All of them take the user instance and should callback telling if the method is allowed to that user:
 
 ```javascript
-function Message(from, to, text){
-    this.from = from._id.toString();
-    this.to = to._id.toString();
+function Message(from_id, to_id, text){
+    this.from_id = from_id;
+    this.to_id = to_id;
     this.text = text;
 }
 
 Message.prototype.allowCreate = function(user, cb) {
     //a user can only create messages sent by him
-    return cb(null, from === user._id.toString());
+    return cb(null, this.from_id === user._id.toString());
 }
 
 Message.prototype.allowUpdate = function(user, cb) {
     //a user can only update messages sent by him
-    return cb(null, from === user._id.toString());
+    return cb(null, this.from_id === user._id.toString());
 }
 
 Message.prototype.allowFind = function(user, cb) {
     //a user can only get messages sent by him or to him
-    return cb(null, from === user._id.toString() || to === user._id.toString());
+    return cb(null, this.from_id === user._id.toString() || this.to_id === user._id.toString());
 }
 
 Message.prototype.allowDelete = function(user, cb) {
@@ -363,9 +363,16 @@ Message.prototype.allowDelete = function(user, cb) {
 
 module.exports = Invisible.createModel("Message", Message);
 ```
+Similarly, `allowEvents` can be used to decide if a user is authorized to receive a real time update on a model:
+```javascript
+Message.prototype.allowEvents = function(user, cb) {
+    //only sent events when a message is sent to the user
+    return cb(null, this.to_id === user._id.toString());
+}
+```
 
 Another hook, `baseQuery`, is available to restrict what segment of the database the user should have access to.
-It also takes the user, and callbacks with a criteria object like the one for the [query method](/#query). This base criteria
+It also takes the user, and callbacks with a criteria object like the one for the [query method](/#query). This base criteria,
 is and-ed with the criteria used in `query` to filter out unauthorized data. Following the previous example:
 
 ```javascript

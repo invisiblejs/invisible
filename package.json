@@ -25,7 +25,8 @@
     "revalidator": "^0.2.0",
     "socket.io": "^1.1.0",
     "socket.io-client": "^1.1.0",
-    "underscore": "^1.7.0"
+    "underscore": "^1.7.0",
+    "winston": "^0.8.1"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
@@ -33,6 +34,8 @@
     "grunt-mocha-test": "~0.6.3",
     "matchdep": "~0.1.2",
     "nock": "^0.32.1",
+    "proxyquire": "^1.0.1",
+    "sinon": "^1.10.3",
     "supertest": "~0.7.1"
   }
 }

@@ -1,6 +1,6 @@
 'use strict';
 
-var Invisible = require('../..');
+var Invisible = require('../../..');
 
 function Person(firstName, lastName, email){
   this.firstName = firstName;
