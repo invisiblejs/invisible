@@ -395,7 +395,7 @@ describe 'Server socket authentication', () ->
         #FIXME copy pasted
         Token = require('../../lib/auth/token')
         server = new ServerSocketMock()
-        require('../../lib/auth/socket')(server, {
+        require('socketio-auth')(server, {
             timeout:80,
             authenticate: Token.check
             })
@@ -439,7 +439,7 @@ describe 'Server socket authentication', () ->
             assert.equal socket, client
             done()
         
-        require('../../lib/auth/socket')(server, {
+        require('socketio-auth')(server, {
             timeout:80,
             authenticate: Token.check
             postAuthenticate: postAuth
