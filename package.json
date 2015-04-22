@@ -4,7 +4,11 @@
   "description": "DRY models for client and server",
   "main": "index.js",
   "scripts": {
-    "test": "grunt test"
+    "jscs": "jscs test/ lib/ examples/",
+    "jshint": "jshint lib/ test/ examples/",
+    "lint": "npm run jshint && npm run jscs",
+    "pretest": "npm run lint",
+    "test": "mocha test/server/ test/client/"
   },
   "repository": {
     "type": "git",
@@ -18,9 +22,9 @@
   "dependencies": {
     "body-parser": "^1.2.0",
     "browserify": "^6.0.3",
+    "coffee-script": "^1.9.2",
     "coffeeify": "^0.7.0",
     "express": "^4.3.1",
-    "grunt": "^0.4.5",
     "mongodb": "^1.4.18",
     "path": "~0.4.9",
     "revalidator": "^0.2.0",
@@ -31,10 +35,9 @@
     "winston": "^0.8.1"
   },
   "devDependencies": {
-    "grunt": "~0.4.1",
-    "grunt-contrib-watch": "~0.5.2",
-    "grunt-mocha-test": "~0.6.3",
+    "jshint": "~2.5.10",
     "matchdep": "~0.1.2",
+    "mocha": "~1.21.4",
     "nock": "^0.32.1",
     "proxyquire": "^1.0.1",
     "sinon": "^1.10.3",
