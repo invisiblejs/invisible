@@ -2,13 +2,13 @@
 
 var Invisible = require('../../..');
 
-function Person(firstName, lastName, email){
+function Person(firstName, lastName, email) {
   this.firstName = firstName;
   this.lastName = lastName;
   this.email = email;
 }
 
-Person.prototype.fullName = function(){
+Person.prototype.fullName = function() {
   return this.firstName + ' ' + this.lastName;
 };
 

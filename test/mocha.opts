@@ -1,0 +1,3 @@
+--ui bdd
+--recursive
+--compilers coffee:coffee-script/register
