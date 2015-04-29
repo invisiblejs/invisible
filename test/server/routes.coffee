@@ -8,7 +8,7 @@ app = express()
 bodyParser = require('body-parser');
 
 config = require('../../lib/config')
-app.use(bodyParser());
+app.use(bodyParser.json());
 require('../../lib/routes')(app)
 
 

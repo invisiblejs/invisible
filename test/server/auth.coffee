@@ -10,7 +10,7 @@ sinon = require('sinon')
 config.db_uri = 'mongodb://127.0.0.1:27017/invisible-test'
 
 app = express()
-app.use(bodyParser());
+app.use(bodyParser.json());
 app.use(require('../../lib/auth'))
 require('../../lib/routes')(app)
 
@@ -435,10 +435,10 @@ describe 'Server socket authentication', () ->
         client = new ClientSocketMock(5)
 
         postAuth = (socket, tokenData) ->
-            assert.equal tokenData.token, "access"                        
+            assert.equal tokenData.token, "access"
             assert.equal socket, client
             done()
-        
+
         require('socketio-auth')(server, {
             timeout:80,
             authenticate: Token.check
@@ -513,7 +513,7 @@ describe 'Server socket authorization', () ->
     it 'Should send events to any client if allow method not defined', (done)->
         server.connect("/User", client)
         person = new Invisible.models.User()
-        
+
         #allow not defined, the namespace does regular broadcast
         Invisible.models.User.serverSocket.once 'new', (model)->
             assert.equal person, model
@@ -529,7 +529,7 @@ describe 'Server socket authorization', () ->
         client.once 'new', (model)->
             assert.equal msg, model
             done()
-        
+
         msg.save ()->
             undefined
 
@@ -539,7 +539,7 @@ describe 'Server socket authorization', () ->
 
         callback = sinon.spy()
         client.once 'new', callback
-        
+
         msg.save ()->
             sinon.assert.notCalled(callback)
             done()
