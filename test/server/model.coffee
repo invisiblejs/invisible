@@ -55,7 +55,7 @@ describe 'Server InvisibleModel', () ->
         martin.save ()->
             assert(martin._id?)
 
-            db.collection("Person").findOne {_id: martin._id}, (err, result) ->
+            db.collection("Person").findOne {_id: new mongo.ObjectID(martin._id)}, (err, result) ->
                 assert(result?)
                 assert.equal(result.name, 'Martin')
                 done()
@@ -64,7 +64,7 @@ describe 'Server InvisibleModel', () ->
         assert(martin._id?)
         martin.name = "Carlos"
         martin.save ()->
-            db.collection("Person").findOne {_id: martin._id}, (err, result) ->
+            db.collection("Person").findOne {_id: new mongo.ObjectID(martin._id)}, (err, result) ->
                 assert(result?)
                 assert.equal(result.name, 'Carlos')
                 done()
@@ -72,17 +72,17 @@ describe 'Server InvisibleModel', () ->
     it 'should remove the document on delete', (done) ->
         martin.delete (err)->
             assert(not err?)
-            db.collection("Person").findOne {_id: martin._id}, (err, result) ->
+            db.collection("Person").findOne {_id: new mongo.ObjectID(martin._id)}, (err, result) ->
                 assert(not result?)
                 done()
 
     it 'should find instance by id', (done) ->
         martin._id = undefined
         martin.save () ->
-            id = martin._id.toString()
+            id = martin._id
             Invisible.models.Person.findById id, (e, result) ->
                 assert.equal(martin.name, result.name)
-                assert.equal(martin._id.toString(), result._id.toString())
+                assert.equal(martin._id, result._id)
                 done()
 
     it 'should raise an error for finding by an unexistent id', (done) ->
@@ -113,22 +113,20 @@ describe 'Server InvisibleModel', () ->
         Invisible.models.Person.query name: "Facundo", (e, results)->
             assert.equal(results.length, 1)
             assert.equal(results[0].getName(), "Facundo")
-            assert.equal(facundo._id.toString(), results[0]._id.toString())
+            assert.equal(facundo._id, results[0]._id)
             done()
 
     it 'should allow querying by _id string', (done) ->
-        facundo_id = facundo._id.toString()
-        martin_id = martin._id.toString()
 
-        Invisible.models.Person.query _id: facundo_id, (e, results)->
+        Invisible.models.Person.query _id: facundo._id, (e, results)->
             assert.equal(results.length, 1)
             assert.equal(results[0].getName(), "Facundo")
 
-            Invisible.models.Person.query _id: $in: [facundo_id], (e, results)->
+            Invisible.models.Person.query _id: $in: [facundo._id], (e, results)->
                 assert.equal(results.length, 1)
                 assert.equal(results[0].getName(), "Facundo")
 
-                Invisible.models.Person.query _id: $nin: [martin_id], (e, results)->
+                Invisible.models.Person.query _id: $nin: [martin._id], (e, results)->
                     assert.equal(results.length, 1)
                     assert.equal(results[0].getName(), "Facundo")
 
