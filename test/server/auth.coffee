@@ -498,19 +498,19 @@ describe 'Server socket authorization', () ->
                 cb(null, user._id == @to)
 
         Invisible.createModel("Message", Message)
-        facundo = new Invisible.models.User("Facundo", "pass")
-        facundo.save()
         martin = new Invisible.models.User("Martin", "pass")
         martin.save()
         client = new ClientSocketMock(5)
         server = new ServerSocketMock()
+        facundo = new Invisible.models.User("Facundo", "pass")
+        facundo.save ()->
 
-        Invisible.models.User.serverSocket = server.nsps["/User"]
-        Invisible.models.Message.serverSocket = server.nsps["/Message"]
+            Invisible.models.User.serverSocket = server.nsps["/User"]
+            Invisible.models.Message.serverSocket = server.nsps["/Message"]
 
-        client.auth = true
-        client.client.user = facundo
-        done()
+            client.auth = true
+            client.client.user = facundo
+            done()
 
     it 'Should send events to any client if allow method not defined', (done)->
         server.connect("/User", client)
