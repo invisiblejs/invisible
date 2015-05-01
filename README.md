@@ -1,7 +1,7 @@
 # [Invisible.js](http://invisiblejs.github.io) [![Build Status](https://secure.travis-ci.org/invisiblejs/invisible.png)](http://travis-ci.org/invisiblejs/invisible) [![Dependencies](https://david-dm.org/invisiblejs/invisible.png)](https://david-dm.org/invisiblejs/invisible) [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/invisiblejs/invisible?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Invisible is a JavaScript library that leverages 
-[browserify](https://github.com/substack/node-browserify) to achieve the Holy Grail of web programming: 
+Invisible is a JavaScript library that leverages
+[browserify](https://github.com/substack/node-browserify) to achieve the Holy Grail of web programming:
 model reuse in the client and the server.
 
 ## Installation and setup
@@ -73,13 +73,13 @@ In the client, just add the invisible script:
 </script>
 ```
 
-Invisible.js uses [browserify](https://github.com/substack/node-browserify) to expose you server defined 
+Invisible.js uses [browserify](https://github.com/substack/node-browserify) to expose you server defined
 models in the browser, so you can use any broserify-able library to implement them. Note that this
 integration is seamless, no need to build a bundle, Invisible.js does that for you on the fly.
 
 ## REST and MongoDB integration
 
-In addition to making your models available everywhere, Invisible extends them with methods to handle 
+In addition to making your models available everywhere, Invisible extends them with methods to handle
 persistence. In the server this means interacting with MongoDB and in the client making requests to an
 auto-generated REST API, that subsequently performs the same DB action.
 
@@ -94,7 +94,7 @@ jane.save(function(err, result){
     }
 })
 ```
-The first time the save method is called, it creates the model in the database and sets its `_id` attribute. 
+The first time the save method is called, it creates the model in the database and sets its `_id` attribute.
 Subsequent calls update the model. Validations are called upon saving, see the validations section for details.
 
 Note that a full Invisible model instance is passed to the callback, and the calling instance is also updated
@@ -147,11 +147,11 @@ Invisible.Person.query({}, {sort: "lastName", limit: 10}, function(err, results)
 });
 ```
 
-Queries the database for existent models. The first two optional arguments correspond to the 
-[Query object](http://mongodb.github.io/node-mongodb-native/markdown-docs/queries.html#query-object) 
-and [Query options](http://mongodb.github.io/node-mongodb-native/markdown-docs/queries.html#query-options) 
-in the MongoDB Node.JS driver. The one difference is that when using ids you can pass strings, 
-that will be converted to ObjectID when necessary. 
+Queries the database for existent models. The first two optional arguments correspond to the
+[Query object](http://mongodb.github.io/node-mongodb-native/markdown-docs/queries.html#query-object)
+and [Query options](http://mongodb.github.io/node-mongodb-native/markdown-docs/queries.html#query-options)
+in the MongoDB Node.JS driver. The one difference is that when using ids you can pass strings,
+that will be converted to ObjectID when necessary.
 
 ### Find by id
 ```javascript
@@ -170,8 +170,8 @@ a string id instead of an ObjectID instance.
 
 ## Validations
 
-Invisible.js integrates with [revalidator](https://github.com/flatiron/revalidator) to handle model validations. 
-A `validate` method is added to each model which looks for a defined validation schema, and is executed each time 
+Invisible.js integrates with [revalidator](https://github.com/flatiron/revalidator) to handle model validations.
+A `validate` method is added to each model which looks for a defined validation schema, and is executed each time
 a model is saved, both in the client and the server. For example:
 
 ```javascript
@@ -195,8 +195,8 @@ john.save(function(err, result){
 
 john.email = "invalid";
 john.save(function(err, result){
-    console.log(err); 
-    /* Prints: {valid: false, errors: [{attribute: 'format', 
+    console.log(err);
+    /* Prints: {valid: false, errors: [{attribute: 'format',
         property: 'email', message: 'is not a valid email'}]} */
 })
 ```
@@ -221,12 +221,12 @@ Person.prototype.checkUnique = function(cb) {
 ```
 
 The custom validation method takes a callback and should call it with the return format of revalidator: an object
-with a "valid" boolean field and an "errors" list. Note that the method validations are only called if the 
+with a "valid" boolean field and an "errors" list. Note that the method validations are only called if the
 properties validations succeed, and stop the validation process upon the first failure.
 
 ## Real time events
 
-Invisible.js uses [socket.io](http://socket.io/) to emmit an event whenever something changes for a model, and lets you add listener 
+Invisible.js uses [socket.io](http://socket.io/) to emmit an event whenever something changes for a model, and lets you add listener
 functions to react to those changes in realtime.
 
 To add realtime features:
@@ -256,8 +256,8 @@ Invisible.js provides a default method to authenticate the requests to the REST 
 Owner Password flow](http://techblog.hybris.com/2012/06/11/oauth2-resource-owner-password-flow/). This means than when activating authentication, a route is exposed that exchanges user
 credentials for a request token used to sign the rest of the API calls. Unsigned calls will get a 401 response.
 
-To use authentication, you must first define a user model in whatever way you like; the only constraint is that 
-you must be able to identify a user with a pair of credentials such as username/password. By default the `User` 
+To use authentication, you must first define a user model in whatever way you like; the only constraint is that
+you must be able to identify a user with a pair of credentials such as username/password. By default the `User`
 name is assumed for the model, but this can be overriden via the `userModel` configuration.
 
 ```javascript
@@ -277,7 +277,7 @@ User.prototype.isPassword = function(rawPassword){
 module.exports = Invisible.createModel("User", User);
 ```
 
-Once the User model is defined, authentication is activated by defining an `authenticate` function in the 
+Once the User model is defined, authentication is activated by defining an `authenticate` function in the
 configuration, that takes the credentials and returns the authenticated user:
 
 ```javascript
@@ -343,17 +343,17 @@ function Message(from_id, to_id, text){
 
 Message.prototype.allowCreate = function(user, cb) {
     //a user can only create messages sent by him
-    return cb(null, this.from_id === user._id.toString());
+    return cb(null, this.from_id === user._id);
 }
 
 Message.prototype.allowUpdate = function(user, cb) {
     //a user can only update messages sent by him
-    return cb(null, this.from_id === user._id.toString());
+    return cb(null, this.from_id === user._id;
 }
 
 Message.prototype.allowFind = function(user, cb) {
     //a user can only get messages sent by him or to him
-    return cb(null, this.from_id === user._id.toString() || this.to_id === user._id.toString());
+    return cb(null, this.from_id === user._id || this.to_id === user._id;
 }
 
 Message.prototype.allowDelete = function(user, cb) {
@@ -367,7 +367,7 @@ Similarly, `allowEvents` can be used to decide if a user is authorized to receiv
 ```javascript
 Message.prototype.allowEvents = function(user, cb) {
     //only sent events when a message is sent to the user
-    return cb(null, this.to_id === user._id.toString());
+    return cb(null, this.to_id === user._id;
 }
 ```
 
@@ -378,10 +378,10 @@ is and-ed with the criteria used in `query` to filter out unauthorized data. Fol
 ```javascript
 Message.baseQuery = function(user, cb){
     //only expose message sent to or by the user
-    return cb(null, {$or: [{from: user._id.toString()}, {to: user._id.toString()}]})
+    return cb(null, {$or: [{from: user._id}, {to: user._id}]})
 }
 ```
-Now when calling `Invisible.Message.query` in the client, only messages sent by and to the logged user will be 
+Now when calling `Invisible.Message.query` in the client, only messages sent by and to the logged user will be
 received.
 
 

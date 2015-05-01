@@ -233,11 +233,13 @@ describe 'Authentication routes', () ->
 
         it 'Should allow authorized create', (done)->
             Invisible.models.Message.prototype.allowCreate = (user, cb)->
-                return cb(null, this.from.toString() == user._id.toString())
+                console.log(user._id, typeof(user._id))
+                console.log(this.from, typeof(this.from))
+                return cb(null, this.from == user._id)
 
             request(app)
             .post("/invisible/Message/")
-            .send({text:"howdy", from:facundo._id.toString()})
+            .send({text:"howdy", from:facundo._id})
             .set('Authorization', 'Bearer access')
             .end (err, res) ->
                 assert.equal(res.statusCode, 200)
@@ -246,11 +248,11 @@ describe 'Authentication routes', () ->
 
         it 'Should send a 401 for unauthorized create', (done)->
             Invisible.models.Message.prototype.allowCreate = (user, cb)->
-                return cb(null, this.from.toString() == user._id.toString())
+                return cb(null, this.from == user._id)
 
             request(app)
             .post("/invisible/Message/")
-            .send({text:"howdy", from:martin._id.toString()})
+            .send({text:"howdy", from:martin._id})
             .set('Authorization', 'Bearer access')
             .end (err, res) ->
                 assert.equal(res.statusCode, 401)
@@ -258,11 +260,11 @@ describe 'Authentication routes', () ->
 
         it 'Should allow authorized update', (done)->
             Invisible.models.Message.prototype.allowUpdate = (user, cb)->
-                return cb(null, this.from.toString() == user._id.toString())
+                return cb(null, this.from == user._id)
 
             request(app)
             .put("/invisible/Message/#{m1._id}/")
-            .send({text:"howdy", from:facundo._id.toString()})
+            .send({text:"howdy", from:facundo._id})
             .set('Authorization', 'Bearer access')
             .end (err, res) ->
                 assert.equal(res.statusCode, 200)
@@ -271,11 +273,11 @@ describe 'Authentication routes', () ->
 
         it 'Should send a 401 for unauthorized update', (done)->
             Invisible.models.Message.prototype.allowUpdate = (user, cb)->
-                return cb(null, this.from.toString() == user._id.toString())
+                return cb(null, this.from == user._id)
 
             request(app)
             .put("/invisible/Message/#{m2._id}/")
-            .send({text:"howdy", from:facundo._id.toString()})
+            .send({text:"howdy", from:facundo._id})
             .set('Authorization', 'Bearer access')
             .end (err, res) ->
                 assert.equal(res.statusCode, 401)
@@ -283,7 +285,7 @@ describe 'Authentication routes', () ->
 
         it 'Should allow authorized find', (done)->
             Invisible.models.Message.prototype.allowFind = (user, cb)->
-                return cb(null, this.from.toString() == user._id.toString())
+                return cb(null, this.from == user._id)
 
             request(app)
             .get("/invisible/Message/#{m1._id}/")
@@ -306,7 +308,7 @@ describe 'Authentication routes', () ->
 
         it 'Should allow authorized delete', (done)->
             Invisible.models.Message.prototype.allowDelete = (user, cb)->
-                return cb(null, this.from.toString() == user._id.toString())
+                return cb(null, this.from == user._id)
 
             request(app)
             .del("/invisible/Message/#{m1._id}/")
@@ -318,7 +320,7 @@ describe 'Authentication routes', () ->
 
         it 'Should send a 401 for unauthorized delete', (done)->
             Invisible.models.Message.prototype.allowDelete = (user, cb)->
-                return cb(null, this.from.toString() == user._id.toString())
+                return cb(null, this.from == user._id)
 
             request(app)
             .del("/invisible/Message/#{m2._id}/")
@@ -493,22 +495,22 @@ describe 'Server socket authorization', () ->
         class Message
             constructor: (@text, @from, @to) ->
             allowEvents: (user, cb)->
-                cb(null, user._id.toString() == @to.toString())
+                cb(null, user._id == @to)
 
         Invisible.createModel("Message", Message)
-        facundo = new Invisible.models.User("Facundo", "pass")
-        facundo.save()
         martin = new Invisible.models.User("Martin", "pass")
         martin.save()
         client = new ClientSocketMock(5)
         server = new ServerSocketMock()
+        facundo = new Invisible.models.User("Facundo", "pass")
+        facundo.save ()->
 
-        Invisible.models.User.serverSocket = server.nsps["/User"]
-        Invisible.models.Message.serverSocket = server.nsps["/Message"]
+            Invisible.models.User.serverSocket = server.nsps["/User"]
+            Invisible.models.Message.serverSocket = server.nsps["/Message"]
 
-        client.auth = true
-        client.client.user = facundo
-        done()
+            client.auth = true
+            client.client.user = facundo
+            done()
 
     it 'Should send events to any client if allow method not defined', (done)->
         server.connect("/User", client)
