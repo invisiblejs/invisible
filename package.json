@@ -12,12 +12,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/invisiblejs/invisible.git"
+    "url": "git://github.com/mpaulucci/invisible.git"
   },
   "author": "Facundo Olano and Martin Paulucci",
   "license": "BSD",
   "bugs": {
-    "url": "https://github.com/invisiblejs/invisible/issues"
+    "url": "https://github.com/mpaulucci/invisible/issues"
   },
   "dependencies": {
     "body-parser": "^1.2.0",
