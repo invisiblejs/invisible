@@ -39,7 +39,7 @@
     "matchdep": "~0.1.2",
     "mocha": "~1.21.4",
     "nock": "^0.32.1",
-    "proxyquire": "^1.0.1",
+    "proxyquire": "1.0.1",
     "sinon": "^1.10.3",
     "supertest": "~0.7.1"
   }
