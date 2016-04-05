@@ -366,8 +366,8 @@ module.exports = Invisible.createModel("Message", Message);
 Similarly, `allowEvents` can be used to decide if a user is authorized to receive a real time update on a model:
 ```javascript
 Message.prototype.allowEvents = function(user, cb) {
-    //only sent events when a message is sent to the user
-    return cb(null, this.to_id === user._id;
+    //only send events when a message is sent to the user
+    return cb(null, this.to_id === user._id);
 }
 ```
 
