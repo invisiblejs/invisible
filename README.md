@@ -253,7 +253,7 @@ Invisible.Person.on('delete', function(model){
 ## Authentication
 
 Invisible.js provides a default method to authenticate the requests to the REST API, based on OAuth2's [Resource
-Owner Password flow](http://techblog.hybris.com/2012/06/11/oauth2-resource-owner-password-flow/). This means than when activating authentication, a route is exposed that exchanges user
+Owner Password flow](http://tools.ietf.org/html/draft-ietf-oauth-v2-25#page-34). This means than when activating authentication, a route is exposed that exchanges user
 credentials for a request token used to sign the rest of the API calls. Unsigned calls will get a 401 response.
 
 To use authentication, you must first define a user model in whatever way you like; the only constraint is that
