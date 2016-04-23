@@ -1,4 +1,4 @@
-# [Invisible.js](http://invisiblejs.github.io) [![Build Status](https://secure.travis-ci.org/invisiblejs/invisible.png)](http://travis-ci.org/mpaulucci/invisible) [![Dependencies](https://david-dm.org/invisiblejs/invisible.png)](https://david-dm.org/mpaulucci/invisible) [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/invisiblejs/invisible?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+# [Invisible.js](http://invisiblejs.github.io) [![Build Status](https://secure.travis-ci.org/invisiblejs/invisible.png)](http://travis-ci.org/invisiblejs/invisible) [![Dependencies](https://david-dm.org/invisiblejs/invisible.png)](https://david-dm.org/invisiblejs/invisible) [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/invisiblejs/invisible?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Invisible is a JavaScript library that leverages
 [browserify](https://github.com/substack/node-browserify) to achieve the Holy Grail of web programming:
